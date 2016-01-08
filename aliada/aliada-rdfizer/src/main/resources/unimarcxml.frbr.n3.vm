@@ -274,13 +274,15 @@
 				#set($work_uri = "#uri_literal('Work' $work_id)")
 				$work_uri #bf('creator') $cluster_uri . 
 			#end 
+			#set($firstTimeViaf = true)			
 			#foreach($cluster_entry in $cluster.entries)				
 				#if($cluster_entry.preferred)
 					#set($text = $function.escape($cluster_entry.heading))
 					$cluster_uri $label "$text" . 
 					$cluster_uri $authorizedAccessPoint "$text" . 
-				#elseif ($cluster_entry.viafId)
+				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> . 
+					#set($firstTimeViaf = false)
 				#else
 					$cluster_uri $label "$function.escape($cluster_entry.heading)" . 
 				#end 	
@@ -303,12 +305,15 @@
 			$cluster_uri $is_a #bf('Work') . 
 			$cluster_uri #bf('hasInstance') $manifestation_s . 
 			$manifestation_s #bf('instanceOf') $cluster_uri . 
+			
+			#set($firstTimeViaf = true)
 			#foreach($cluster_entry in $cluster.entries)
 				#if($cluster_entry.preferred)
 					#threeValue($cluster_uri $cluster_entry.heading "workTitle" $title_c $workTitle $titleValue $titleType "Preferred Title" $subtitle "") 
 					#setAuthorizedAccessPoint($root $cluster_uri $cluster_entry.heading)
-				#elseif ($cluster_entry.viafId)
+				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> . 
+					#set($firstTimeViaf = false)
 				#else
 					#threeValue($cluster_uri $cluster_entry.heading "workTitle" $title_c $workTitle $titleValue $titleType "Other Variant Title" $subtitle "") 
 				#end 	
