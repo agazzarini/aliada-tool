@@ -1,5 +1,20 @@
 #macro (bf $v)<http://bibframe.org/vocab/$v>#end 
 		
+#*		
+## per mappare le opere collegata (es. supersedes, serie, relatedTo, ecc.)			
+#macro(work_related $s $tag $subfield $record $type $kind $predicate) 
+	#set($tagValues = $xpath.dfs($tag,$subfield,$record))
+	#foreach($tagValue in $tagValues) 
+		#if($tagValue) 
+    		#set($text = $function.escape($function.clean($tagValue.textContent)))
+        	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
+        	$s1 $is_a $kind .         			
+        	$s1 $label "$text" . 
+        	$s $predicate $s1 . 
+		#end	
+	#end	
+#end	
+*#
 
 ##mappa la relazione tra un nodo ed una tripla complessa, contenent un attributo
 #macro(oneValue $s $firstValue $type $kind $predicate $label1) 	
@@ -126,8 +141,6 @@
 		#end
 	#end		
 #end
-
-
 
 
 
@@ -278,6 +291,8 @@
 #set($event_c = "#bf('Event')")
 #set($eventDate = "#bf('eventDate')")
 
+
+
 #set($people = $frbr.personIDs)
 #foreach($entry in $people.entrySet()) 
 	#set($tagName = $entry.getKey())
@@ -367,27 +382,60 @@
 #end  
 
 
-
-
 #foreach($w in $frbr.flatWorkIDs)
 	#set($cluster_uri = "#uri_literal('Work' ${w.id})")
-	##
-	#oneTriple($root $cluster_uri "328" "a" $dissertationNote)
-	##
-	#oneTriple($root $cluster_uri "607" "a" $geographicCoverageNote)
-	##
-	#triplesWithBlankNode($root $cluster_uri $workTitle "501" "a" "workTitle" $title_c $titleValue "501" "a" $titleType "" "collective title")
-	##
-	#triplesWithBlankNode($root $cluster_uri $issnL "011" "a" "issnL" $identifier_c $identifierValue "011" "a" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
 	
-	#triplesWithBlankNode($root $cluster_uri $classification "686" "a" "classification" $classification_c $classificationNumber "686" "a")
-	#triplesWithBlankNode($root $cluster_uri $classification "022" "b" "classification" $classification_c $classificationNumber "022" "b")
+	##marc21
+	#oneTriple($root $cluster_uri "502" "a" $dissertationNote)
+	#oneTriple($root $cluster_uri "502" "b" $dissertationDegree)
+	#oneTriple($root $cluster_uri "502" "d" $dissertationYear)
+	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
+	#triplesWithBlankNode($root $cluster_uri $dissertationIdentifier "502" "o" "issnL" $identifier_c $identifierValue "502" "o"
+	##penso vadano in OR le seguenti condizioni
+	##originDate
+	#oneTriple($root $cluster_uri "130" "d" $originDate)	
+	#oneTriple($root $cluster_uri "130" "f" $originDate)
+	#oneTriple($root $cluster_uri "730" "d" $originDate)
+	#oneTriple($root $cluster_uri "730" "f" $originDate)
+	#oneTriple($root $cluster_uri "046" "kl" $originDate)
+	##penso vadano in OR le seguenti condizioni
+	##geographicCoverageNote
+	#oneTriple($root $cluster_uri "522" "a" $geographicCoverageNote)
+	#oneTriple($root $cluster_uri "651" "a" $geographicCoverageNote)
+	#oneTriple($root $cluster_uri "662" "abcdefg" $geographicCoverageNote)
+	#oneTriple($root $cluster_uri "662" "h" $geographicCoverageNote)
+	##penso vadano in OR le seguenti condizioni
+	##temporalCoverageNote
+	#oneTriple($root $cluster_uri "513" "b" $temporalCoverageNote)
+	#oneTriple($root $cluster_uri "648" "a" $temporalCoverageNote)	
+	#oneTriple($root $cluster_uri "533" "m" $temporalCoverageNote)
+	
+	##event
+	#triplesWithBlankNode($root $cluster_uri $event "518" "a" "Event" $event_c $label "518" "a" $label "518" "o" $eventDate "518" "d") 
+	
+	##penso vadano in OR le seguenti condizioni
+	##classification ddc
+	#triplesWithBlankNode($root $cluster_uri $classificationDdc "082" "a" "ddc" $classification_c $classificationNumber "082" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
+	#triplesWithBlankNode($root $cluster_uri $classificationDdc "083" "ac" "ddc" $classification_c $classificationNumber "083" "ac" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
+	
+	##penso vadano in OR le seguenti condizioni
+	##classification Llc
+	#oneTripleWithUri($root $cluster_uri "050" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
+	#oneTripleWithUri($root $cluster_uri "055" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
+	#oneTripleWithUri($root $cluster_uri "052" "ab" $classificationLcc "<http://id.loc.gov/authorities/classification")
+	
+	
+	##classification udc
+	#triplesWithBlankNode($root $cluster_uri $classificationUdc "080" "a" "udc" $classification_c $classificationNumber "080" "a" $classificationScheme "" "classificationUdc")
+	
+	##classification Nlm
+	#oneTripleWithUri($root $cluster_uri "060" "a" $classificationNlm "<http://nlm.example.org/classification")
 
-	#triplesWithBlankNode($root $cluster_uri $classificationUdc "675" "a" "udc" $classification_c $classificationNumber "675" "a" $classificationScheme "" "classificationUdc")
-	#triplesWithBlankNode($root $cluster_uri $classificationDdc "676" "a" "ddc" $classification_c $classificationNumber "676" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
 	
-	#oneTripleWithUri($root $cluster_uri "680" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
-	#oneTripleWithUri($root $cluster_uri "686" "a" $classificationNlm "<http://nlm.example.org/classification")
+	##classification isnnL
+	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
+	
+	
 #end
 
 
@@ -406,25 +454,15 @@
 	#set($k = "instanceTitle")
 #end
 
-#triplesWithBlankNode($root $s $p "503" "a" $k $title_c $titleValue "503" "a" $titleType "" "Preferred Conventional Heading" $subtitle "503" "e")
+
+
 
 
 ## ISTANCE
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "560" "a" "instanceTitle" $title_c $titleValue "560" "a" $titleType "" "Artifical Title" $subtitle "560" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "545" "a" "instanceTitle" $title_c $titleValue "545" "a" $titleType "" "Section Title" $subtitle "545" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "541" "a" "instanceTitle" $title_c $titleValue "541" "a" $titleType "" "Translated Title Supplied by Cataloguer" $subtitle "541" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "540" "a" "instanceTitle" $title_c $titleValue "540" "a" $titleType "" "Additional Title Supplied by Cataloguer" $subtitle "540" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "532" "a" "instanceTitle" $title_c $titleValue "532" "a" $titleType "" "Expanded Title" $subtitle "532" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "531" "a" "instanceTitle" $title_c $titleValue "531" "a" $titleType "" "Abbreviated Title" $subtitle "531" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "530" "a" "instanceTitle" $title_c $titleValue "530" "a" $titleType "" "Key-Title" $subtitle "530" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "518" "a" "instanceTitle" $title_c $titleValue "518" "a" $titleType "" "Title in Standard Modern Spelling" $subtitle "518" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "517" "a" "instanceTitle" $title_c $titleValue "517" "a" $titleType "" "Other Variant Title" $subtitle "517" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "516" "a" "instanceTitle" $title_c $titleValue "516" "a" $titleType "" "Spine Title" $subtitle "516" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "515" "a" "instanceTitle" $title_c $titleValue "515" "a" $titleType "" "Running Title" $subtitle "515" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "514" "a" "instanceTitle" $title_c $titleValue "514" "a" $titleType "" "Caption Title" $subtitle "514" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "513" "a" "instanceTitle" $title_c $titleValue "513" "a" $titleType "" "Added Title-Page Title" $subtitle "513" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "512" "a" "instanceTitle" $title_c $titleValue "512" "a" $titleType "" "Cover Title" $subtitle "512" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "511" "a" "instanceTitle" $title_c $titleValue "511" "a" $titleType "" "Half Title" $subtitle "511" "e")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "510" "a" "instanceTitle" $title_c $titleValue "510" "a" $titleType "" "Parallel Title Proper" $subtitle "510" "e")
+
+##marc21
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "247" "a" "instanceTitle" $title_c $titleValue "247" "a" $titleType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partTitle "247" "p" $titleVariationDate "247" "f")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "242" "a" "instanceTitle" $title_c $titleValue "242" "a" $titleType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partTitle "242" "p")
+#oneTriple($root $manifestation_s "546" "a" $languageNote) ## ci andrebbe "3a" ma sono scettica
 
 
