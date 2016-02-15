@@ -71,7 +71,7 @@
 
 
 
-#macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5)
+#macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
 	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))
 	#foreach($_tag in $_tags)
 		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
@@ -98,6 +98,9 @@
 			#end
 			#if($predicate5)				
 				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($predicate6)				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
 			#end
 		#end
 	#end
@@ -285,11 +288,44 @@
 #set($dissertationYear = "#bf('dissertationYear')")
 #set($languageNote = "#bf('languageNote')")
 #set($dissertationIdentifier = "#bf('dissertationIdentifier')")
-#set($originDate = "#bf('originDate')")
 #set($temporalCoverageNote = "#bf('temporalCoverageNote')")
 #set($event = "#bf('event')")
 #set($event_c = "#bf('Event')")
 #set($eventDate = "#bf('eventDate')")
+#set($mediaCategory = "#bf('mediaCategory')")
+#set($carrierCategory = "#bf('carrierCategory')")
+#set($genre = "#bf('genre')")
+#set($keyTitle = "#bf('keyTitle')")
+#set($abbreviatedTitle = "#bf('abbreviatedTitle')")
+#set($titleVariation = "#bf('titleVariation')")
+#set($titleQualifier = "#bf('titleQualifier')")
+#set($musicNumber = "#bf('musicNumber')")
+#set($musicVersion = "#bf('musicVersion')")
+#set($musicMediumNote = "#bf('musicMediumNote')")
+#set($legalDate = "#bf('legalDate')")
+#set($dimensions = "#bf('dimensions')")
+#set($edition = "#bf('edition')")
+#set($editionResponsibility = "#bf('editionResponsibility')")
+#set($extent = "#bf('extent')")
+#set($frequency = "#bf('frequency')")
+#set($responsibilityStatement = "#bf('responsibilityStatement')")
+#set($serialFirstIssue = "#bf('serialFirstIssue')")
+#set($serialLastIssue = "#bf('serialLastIssue')")
+#set($format = "#bf('format')")
+#set($providerStatement = "#bf('providerStatement')")
+#set($frequencyNote = "#bf('frequencyNote')")
+#set($awardNote = "#bf('awardNote')")
+#set($custodialHistory = "#bf('custodialHistory')")
+#set($illustrationNote = "#bf('illustrationNote')")
+#set($notation = "#bf('notation')")
+#set($preferredCitation = "#bf('preferredCitation')")
+#set($supplementaryContentNote = "#bf('supplementaryContentNote')")
+#set($graphicScaleNote = "#bf('graphicScaleNote')")
+#set($aspectRatio = "#bf('aspectRatio')")
+#set($duration = "#bf('duration')")
+#set($creditsNote = "#bf('creditsNote')")
+#set($immediateAcquisition = "#bf('immediateAcquisition')")
+#set($performerNote = "#bf('performerNote')")
 
 
 
@@ -363,43 +399,56 @@
 		$s1 $identifierScheme <http://share-cat/identifiers/works/Local> .
 		$s1 $identifierValue "$cluster.id" .
 		$cluster_uri $local $s1 .
-		 
-		##				
-		#set($v = $xpath.combine($tag, "k"))
-		#if($function.isNotNullAndNotEmpty($v)) 
-			#set($text = $function.escape($v))
-			$cluster_uri $originDate "$text" .
-			##
-		#end				
-        ##contentCategory		
-        #set($s1 = "#uri_with_strong_normalization('contentCategory' ${text})")				
-        $s1 $is_a $category_c .
-        $s1 $categoryType "content category" .
-        $s1 $categoryValue "Text" .
-        $cluster_uri $contentCategory $s1 .
-		##
+					
+       
 	#end 			
 #end  
 
-
+##All WORK
 #foreach($w in $frbr.flatWorkIDs)
 	#set($cluster_uri = "#uri_literal('Work' ${w.id})")
 	
 	##marc21
+	##content category
+	#set($triple = "")
+	#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $contentType '336' 'a')")
+	#if(!$triple || $triple == "")
+		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'b' 'Category' $category_c $contentType '336' 'b')")
+	#end
+	#if(!$triple || $triple == "")
+		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '345' 'k' 'Category' $category_c $contentType '345' 'k')")
+	#end
+	$triple
+	
+	
 	#oneTriple($root $cluster_uri "502" "a" $dissertationNote)
 	#oneTriple($root $cluster_uri "502" "b" $dissertationDegree)
 	#oneTriple($root $cluster_uri "502" "d" $dissertationYear)
 	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
-	#triplesWithBlankNode($root $cluster_uri $dissertationIdentifier "502" "o" "issnL" $identifier_c $identifierValue "502" "o"
-	##penso vadano in OR le seguenti condizioni
+	#triplesWithBlankNode($root $cluster_uri $dissertationIdentifier "502" "o" "issnL" $identifier_c $identifierValue "502" "o")
+	
 	##originDate
-	#oneTriple($root $cluster_uri "130" "d" $originDate)	
-	#oneTriple($root $cluster_uri "130" "f" $originDate)
-	#oneTriple($root $cluster_uri "730" "d" $originDate)
-	#oneTriple($root $cluster_uri "730" "f" $originDate)
-	#oneTriple($root $cluster_uri "046" "kl" $originDate)
-	##penso vadano in OR le seguenti condizioni
+	#set($triple1 = "")
+	#set($triple1 = "#oneTriple($root $cluster_uri '130' 'd' $originDate)")
+	#if(!$triple1 || $triple1 == "")
+		#set($triple1 = "#oneTriple($root $cluster_uri '130' 'f' $originDate)")
+	#end
+	$triple1
+	
+	##originDate
+	#set($triple2 = "")
+	#set($triple2 = "#oneTriple($root $cluster_uri '730' 'd' $originDate)")
+	#if(!$triple2 || $triple2 == "")
+		#set($triple2 = "#oneTriple($root $cluster_uri '730' 'f' $originDate)")
+	#end
+	$triple2
+	
+	#if(!$triple1 && !$triple2 && $triple2 == "" && $triple1 == "")
+		#oneTriple($root $cluster_uri "046" "kl" $originDate)
+	#end
+	
 	##geographicCoverageNote
+	##va generata una tripla per ciascuno (niente or)
 	#oneTriple($root $cluster_uri "522" "a" $geographicCoverageNote)
 	#oneTriple($root $cluster_uri "651" "a" $geographicCoverageNote)
 	#oneTriple($root $cluster_uri "662" "abcdefg" $geographicCoverageNote)
@@ -435,6 +484,43 @@
 	##classification isnnL
 	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
 	
+	##genre
+	## dovrebbe prendere 008/24-27 posizionale
+	##dovrebbero essere in OR ?
+	#triplesWithBlankNode($root $cluster_uri $genre "008" "24-27?" "genre" $category_c $categoryValue "008" "24-27?")
+	#triplesWithBlankNode($root $cluster_uri $genre "655" "a" "genre" $category_c $categoryValue "665" "a")
+	#triplesWithBlankNode($root $cluster_uri $genre "513" "a" "genre" $category_c $categoryValue "513" "a")
+	#triplesWithBlankNode($root $cluster_uri $genre "516" "a" "genre" $category_c $categoryValue "516" "a")
+	
+	#oneTriple($root $cluster_uri "130" "n" $musicNumber)
+	#oneTriple($root $cluster_uri "240" "n" $musicNumber)
+	#oneTriple($root $cluster_uri "130" "r" $musicKey)
+	#oneTriple($root $cluster_uri "240" "r" $musicKey)
+	#oneTriple($root $cluster_uri "130" "o" $musicVersion)
+	#oneTriple($root $cluster_uri "240" "o" $musicVersion)
+	#oneTriple($root $cluster_uri "382" "adp" $musicMediumNote)
+	#oneTriple($root $cluster_uri "240" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "243" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "700" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "710" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "711" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "730" "m" $musicMediumNote)
+	
+	#oneTriple($root $cluster_uri "130" "d" $legalDate)
+	#oneTriple($root $cluster_uri "730" "d" $legalDate)
+	#oneTriple($root $cluster_uri "130" "f" $legalDate)
+	#oneTriple($root $cluster_uri "730" "f" $legalDate)
+	#oneTriple($root $cluster_uri "046" "kl" $legalDate)
+	
+	
+	##creditsNote
+	#oneTriple($root $manifestation_s "508" "a" $creditNote)
+	
+	##immediateAcquisition
+	#oneTriple($root $manifestation_s "541" "3abcdfhno" $immediateAcquisition)
+	
+	##performerNote
+	#oneTriple($root $manifestation_s "511" "a" $performerNote)
 	
 #end
 
@@ -461,8 +547,115 @@
 ## ISTANCE
 
 ##marc21
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "247" "a" "instanceTitle" $title_c $titleValue "247" "a" $titleType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partTitle "247" "p" $titleVariationDate "247" "f")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "242" "a" "instanceTitle" $title_c $titleValue "242" "a" $titleType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partTitle "242" "p")
+##istance title (che probabilmente non serve se appartiene ad un cluster)
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "245" "ab" "instanceTitle" $title_c $titleValue "245" "ab" $titleType "" "Istance Title" $partNumber "245" "n" $partTitle "245" "p" $titleVariationDate "245" "f")
+
+
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "247" "a" "instanceTitle" $title_c $titleValue "247" "a" $titleType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partTitle "247" "p" $titleVariationDate "247" "f" $titleVariation "247" "ab")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "242" "a" "instanceTitle" $title_c $titleValue "242" "a" $titleType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partTitle "242" "p" $titleVariation "242" "ab")
 #oneTriple($root $manifestation_s "546" "a" $languageNote) ## ci andrebbe "3a" ma sono scettica
+
+#triplesWithBlankNode($root $manifestation_s $keyTitle "222" "a" "keyTitle" $title_c $titleValue "222" "a" $titleType "" "Key Title" $titleQualifier "222" "b")
+#triplesWithBlankNode($root $manifestation_s $abbreviatedTitle "210" "a" "abbreviatedTitle" $title_c $titleValue "210" "a" $titleType "" "Abbreviated Title"  $titleQualifier "210" "b")
+
+
+##media category
+#set($triple = "")
+#set($triple = "#oneTriple($root $manifestation_s '337' 'a' $mediaCategory)")
+#if(!$triple || $triple == "")
+	#set($triple = "#oneTriple($root $manifestation_s '337' 'b' $mediaCategory)")
+#end	
+#if(!$triple || $triple == "")
+	#set($triple = "#oneTriple($root $manifestation_s '007' '00' $mediaCategory)")
+#end
+$triple
+	
+
+##carrierCategory
+## forse vanno in OR
+#oneTriple($root $manifestation_s "338" "a" $carrierCategory)
+#oneTriple($root $manifestation_s "300" "f" $carrierCategory)
+#oneTriple($root $manifestation_s "007" "01" $carrierCategory)
+#oneTriple($root $manifestation_s "338" "b" $carrierCategory)
+#oneTriple($root $manifestation_s "533" "a" $carrierCategory)
+#oneTriple($root $manifestation_s "240" "h" $carrierCategory)
+#oneTriple($root $manifestation_s "243" "h" $carrierCategory)
+#oneTriple($root $manifestation_s "130" "h" $carrierCategory)
+#oneTriple($root $manifestation_s "730" "h" $carrierCategory)
+#oneTriple($root $manifestation_s "700" "h" $carrierCategory)
+#oneTriple($root $manifestation_s "710" "h" $carrierCategory)
+#oneTriple($root $manifestation_s "711" "h" $carrierCategory)
+	
+##dimensions
+#oneTriple($root $manifestation_s "300" "c" $dimensions)
+#oneTriple($root $manifestation_s "340" "c" $dimensions)
+
+##edition
+#oneTriple($root $manifestation_s "250" "a" $edition)
+
+##editionResponsibility
+#oneTriple($root $manifestation_s "250" "b" $editionResponsibility)
+
+##extent
+#oneTriple($root $manifestation_s "300" "eaf" $extent)
+
+##frequency
+#oneTriple($root $manifestation_s "310" "a" $frequency)
+
+##responsibilityStatement
+#oneTriple($root $manifestation_s "245" "c" $responsibilityStatement)
+
+
+##da sistemare
+##serialFirstIssue
+#oneTriple($root $manifestation_s "362" "a" $serialFirstIssue)
+##serialLastIssue
+#oneTriple($root $manifestation_s "362" "a" $serialLastIssue)
+
+##format
+#oneTriple($root $manifestation_s "856" "q" $format)
+#oneTriple($root $manifestation_s "340" "abcdefhljkmno" $format)
+
+##providerStatement
+#oneTriple($root $manifestation_s "260" "abc" $providerStatement)
+#oneTriple($root $manifestation_s "264" "abc" $providerStatement)
+
+##frequencyNote
+#oneTriple($root $manifestation_s "321" "ab" $frequencyNote)
+#oneTriple($root $manifestation_s "310" "ab" $frequencyNote)
+
+
+##awardNote
+#oneTriple($root $manifestation_s "586" "3a" $awardNote)
+
+##custodialHistory
+#oneTriple($root $manifestation_s "561" "3a" $custodialHistory)
+
+##illustrationNote
+#oneTriple($root $manifestation_s "300" "b" $illustrationNote)
+
+##notation
+#oneTriple($root $manifestation_s "546" "b" $notation)
+#oneTriple($root $manifestation_s "007" "01f" $notation)
+#oneTriple($root $manifestation_s "008" "23f" $notation)
+#oneTriple($root $manifestation_s "008" "29f" $notation)
+
+##preferrefCitation
+#oneTriple($root $manifestation_s "524" "a" $preferredCitation)
+
+##supplementaryContentNote
+#oneTriple($root $manifestation_s "504" "ab" $supplementaryContentNote)
+#oneTriple($root $manifestation_s "525" "a" $supplementaryContentNote)
+
+## graphicScaleNote
+#oneTriple($root $manifestation_s "507" "a" $graphicScaleNote)
+
+##aspectRatio
+#oneTriple($root $manifestation_s "007" "04m" $aspectRatio)
+#oneTriple($root $manifestation_s "345" "a" $aspectRatio)
+
+##duration
+#oneTriple($root $manifestation_s "306" "a" $duration)
+
 
 
