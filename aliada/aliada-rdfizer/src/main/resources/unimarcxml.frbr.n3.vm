@@ -277,6 +277,25 @@
 #set($event = "#bf('event')")
 #set($event_c = "#bf('Event')")
 #set($eventDate = "#bf('eventDate')")
+#set($genre = "#bf('genre')")
+#set($language_c = "#bf('Language')")
+#set($language = "#bf('language')")
+#set($cartography = "#bf('cartography')")
+#set($cartography_c = "#bf('Cartography')")
+#set($cartographicAscensionAndDeclination = "#bf('cartographicAscensionAndDeclination')")
+#set($cartographicCoordinates = "#bf('cartographicCoordinates')")
+#set($cartographicEquinox = "#bf('cartographicEquinox')")
+#set($cartographicExclusionGRing = "#bf('cartographicExclusionGRing')")
+#set($cartographicOuterGRing = "#bf('cartographicOuterGRing')")
+#set($cartographicProjection = "#bf('cartographicProjection')")
+#set($cartographicScale = "#bf('cartographicScale')")
+
+
+
+
+
+
+
 
 #set($people = $frbr.personIDs)
 #foreach($entry in $people.entrySet()) 
@@ -363,6 +382,8 @@
         $s1 $categoryValue "Text" .
         $cluster_uri $contentCategory $s1 .
 		##
+		
+		
 	#end 			
 #end  
 
@@ -388,7 +409,17 @@
 	
 	#oneTripleWithUri($root $cluster_uri "680" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
 	#oneTripleWithUri($root $cluster_uri "686" "a" $classificationNlm "<http://nlm.example.org/classification")
+
+	##genre
+	##in realtà bisogna selezionare solo la poszione 4-7 del $a
+	#triplesWithBlankNode($root $cluster_uri $genre "105" "a" "genre" $category_c $categoryValue "105" "a")
+
+	##cartography
+	#triplesWithBlankNode($root $cluster_uri $cartography "206" "e" "cartography" $cartography_c $cartographicAscensionAndDeclination "206" "e" $cartographicCoordinates "206" "d" $cartographicEquinox "206" "f" $cartographicProjection "206" "c" $cartographicScale "206" "b" )
+
+
 #end
+
 
 
 
@@ -426,5 +457,4 @@
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "512" "a" "instanceTitle" $title_c $titleValue "512" "a" $titleType "" "Cover Title" $subtitle "512" "e")
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "511" "a" "instanceTitle" $title_c $titleValue "511" "a" $titleType "" "Half Title" $subtitle "511" "e")
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "510" "a" "instanceTitle" $title_c $titleValue "510" "a" $titleType "" "Parallel Title Proper" $subtitle "510" "e")
-
-
+#triplesWithBlankNode($root $manifestation_s $language "101" "a" "language" $language_c $label "101" "a")

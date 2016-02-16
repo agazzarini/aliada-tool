@@ -292,6 +292,7 @@
 #set($event = "#bf('event')")
 #set($event_c = "#bf('Event')")
 #set($eventDate = "#bf('eventDate')")
+#set($eventPlace = "#bf('eventPlace')")
 #set($mediaCategory = "#bf('mediaCategory')")
 #set($carrierCategory = "#bf('carrierCategory')")
 #set($genre = "#bf('genre')")
@@ -326,6 +327,27 @@
 #set($creditsNote = "#bf('creditsNote')")
 #set($immediateAcquisition = "#bf('immediateAcquisition')")
 #set($performerNote = "#bf('performerNote')")
+#set($language_c = "#bf('Language')")
+#set($language = "#bf('language')")
+#set($languageSource = "#bf('languageSource')")
+#set($arrangement = "#bf('arrangement')")
+#set($arrangement_c = "#bf('Arrangement')")
+#set($materialOrganization = "#bf('materialOrganization')")
+#set($materialArrangement = "#bf('materialArrangement')")
+#set($materialHierarchicalLevel = "#bf('materialHierarchicalLevel')")
+#set($materialPart = "#bf('materialPart')")
+#set($cartography = "#bf('cartography')")
+#set($cartography_c = "#bf('Cartography')")
+#set($cartographicAscensionAndDeclination = "#bf('cartographicAscensionAndDeclination')")
+#set($cartographicCoordinates = "#bf('cartographicCoordinates')")
+#set($cartographicEquinox = "#bf('cartographicEquinox')")
+#set($cartographicExclusionGRing = "#bf('cartographicExclusionGRing')")
+#set($cartographicOuterGRing = "#bf('cartographicOuterGRing')")
+#set($cartographicProjection = "#bf('cartographicProjection')")
+#set($cartographicScale = "#bf('cartographicScale')")
+
+
+
 
 
 
@@ -421,7 +443,7 @@
 	$triple
 	
 	
-	#oneTriple($root $cluster_uri "502" "a" $dissertationNote)
+	#oneTriple($root $cluster_uri "502" "ag" $dissertationNote)
 	#oneTriple($root $cluster_uri "502" "b" $dissertationDegree)
 	#oneTriple($root $cluster_uri "502" "d" $dissertationYear)
 	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
@@ -460,7 +482,26 @@
 	#oneTriple($root $cluster_uri "533" "m" $temporalCoverageNote)
 	
 	##event
-	#triplesWithBlankNode($root $cluster_uri $event "518" "a" "Event" $event_c $label "518" "a" $label "518" "o" $eventDate "518" "d") 
+	#set($value = "")
+	#set($_tags = $xpath.many("datafield[@tag='518']",$root))
+	#foreach($_tag in $_tags)		
+        #set($value = $function.escape($xpath.combine($_tag, "p")))
+	#end
+	#if(!$value || $value == "")
+		#set($_tags = $xpath.many("datafield[@tag='033']",$root))
+		#foreach($_tag in $_tags)		
+			#set($value = $function.escape($xpath.combine($_tag, "p")))
+		#end
+	#end
+	#if(!$value || $value == "")
+		#set($_tags = $xpath.many("datafield[@tag='033']",$root))
+		#foreach($_tag in $_tags)		
+			#set($value = $function.escape($xpath.combine($_tag, "bc")))
+		#end
+	#end	
+	
+	
+	#triplesWithBlankNode($root $cluster_uri $event "518" "a" "Event" $event_c $label "518" "a" $label "518" "o" $eventDate "518" "d" $ventPlace "" "$value") 
 	
 	##penso vadano in OR le seguenti condizioni
 	##classification ddc
@@ -522,6 +563,13 @@
 	##performerNote
 	#oneTriple($root $manifestation_s "511" "a" $performerNote)
 	
+	##findingAidNote
+	#oneTriple($root $manifestation_s "555" "3abc" $performerNote)
+	
+	##cartography
+	#triplesWithBlankNode($root $cluster_uri $cartography "255" "d" "cartography" $cartography_c $cartographicAscensionAndDeclination "255" "d" $cartographicCoordinates "255" "c" $cartographicEquinox "255" "e" $cartographicExclusionGRing "255" "g" $cartographicOuterGRing "255" "f" $cartographicProjection "255" "b" $cartographicScale "255" "a" )
+
+	
 #end
 
 
@@ -553,7 +601,7 @@
 
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "247" "a" "instanceTitle" $title_c $titleValue "247" "a" $titleType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partTitle "247" "p" $titleVariationDate "247" "f" $titleVariation "247" "ab")
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "242" "a" "instanceTitle" $title_c $titleValue "242" "a" $titleType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partTitle "242" "p" $titleVariation "242" "ab")
-#oneTriple($root $manifestation_s "546" "a" $languageNote) ## ci andrebbe "3a" ma sono scettica
+#oneTriple($root $manifestation_s "546" "3a" $languageNote) 
 
 #triplesWithBlankNode($root $manifestation_s $keyTitle "222" "a" "keyTitle" $title_c $titleValue "222" "a" $titleType "" "Key Title" $titleQualifier "222" "b")
 #triplesWithBlankNode($root $manifestation_s $abbreviatedTitle "210" "a" "abbreviatedTitle" $title_c $titleValue "210" "a" $titleType "" "Abbreviated Title"  $titleQualifier "210" "b")
@@ -656,6 +704,9 @@ $triple
 
 ##duration
 #oneTriple($root $manifestation_s "306" "a" $duration)
+#triplesWithBlankNode($root $manifestation_s $language "041" "a" "language" $language_c $label "041" "a" $languageSource "041" "2")
+#triplesWithBlankNode($root $manifestation_s $arrangement "351" "a" "arrangement" $arrangement_c $materialOrganization "351" "a" $materialArrangement "351" "b" $materialHierarchicalLevel "351" "c" $materialPart "351" "3")
+
 
 
 
