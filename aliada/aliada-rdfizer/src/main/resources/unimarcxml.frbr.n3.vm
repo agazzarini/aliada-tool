@@ -289,9 +289,12 @@
 #set($cartographicOuterGRing = "#bf('cartographicOuterGRing')")
 #set($cartographicProjection = "#bf('cartographicProjection')")
 #set($cartographicScale = "#bf('cartographicScale')")
-
-
-
+#set($titleVariation = "#bf('titleVariation')")
+#set($titleAttribute = "#bf('titleAttribute')")
+#set($musicNumber = "#bf('musicNumber')")
+#set($musicKey = "#bf('musicKey')")
+#set($musicVersion = "#bf('musicVersion')")
+#set($musicMediumNote = "#bf('musicMediumNote')")
 
 
 
@@ -350,6 +353,7 @@
 			#foreach($cluster_entry in $cluster.entries)
 				#if($cluster_entry.preferred)
 					#threeValue($cluster_uri $cluster_entry.heading "workTitle" $title_c $workTitle $titleValue $titleType "Preferred Title" $subtitle "") 
+					
 					#setAuthorizedAccessPoint($root $cluster_uri $cluster_entry.heading)
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> . 
@@ -373,8 +377,47 @@
 		#if($function.isNotNullAndNotEmpty($v)) 
 			#set($text = $function.escape($v))
 			$cluster_uri $originDate "$text" .
-			##
-		#end				
+		##
+		#end
+		##
+		
+		#set($v = $xpath.combine($tag, "s"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicNumber "$text" .
+		##
+		#end
+		
+		#set($v = $xpath.combine($tag, "u"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicKey "$text" .
+		##
+		#end
+		
+			
+		#set($v = $xpath.combine($tag, "q"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicVersion "$text" .
+		##
+		#end
+		
+			#set($v = $xpath.combine($tag, "r"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicMediumNote "$text" .
+		##
+		#end
+		
+		##titleAttribute
+		#set($titleNode = "#uri_with_strong_normalization('workTitle' ${function.escape($cluster_entry.heading)})")
+		#set($values = $xpath.combine($tag, "bjklmnqrsuvwxyz23"))
+		#if($function.isNotNullAndNotEmpty($values))
+			$titleNode $titleAttribute $values .			
+		#end
+		##
+		
         ##contentCategory		
         #set($s1 = "#uri_with_strong_normalization('contentCategory' ${text})")				
         $s1 $is_a $category_c .
@@ -388,7 +431,7 @@
 #end  
 
 
-
+## ALL WORK
 
 #foreach($w in $frbr.flatWorkIDs)
 	#set($cluster_uri = "#uri_literal('Work' ${w.id})")
@@ -398,7 +441,7 @@
 	#oneTriple($root $cluster_uri "607" "a" $geographicCoverageNote)
 	##
 	#triplesWithBlankNode($root $cluster_uri $workTitle "501" "a" "workTitle" $title_c $titleValue "501" "a" $titleType "" "collective title")
-	##
+	##	
 	#triplesWithBlankNode($root $cluster_uri $issnL "011" "a" "issnL" $identifier_c $identifierValue "011" "a" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
 	
 	#triplesWithBlankNode($root $cluster_uri $classification "686" "a" "classification" $classification_c $classificationNumber "686" "a")
@@ -417,7 +460,19 @@
 	##cartography
 	#triplesWithBlankNode($root $cluster_uri $cartography "206" "e" "cartography" $cartography_c $cartographicAscensionAndDeclination "206" "e" $cartographicCoordinates "206" "d" $cartographicEquinox "206" "f" $cartographicProjection "206" "c" $cartographicScale "206" "b" )
 
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "510" "ae" "titleVariation" $title_c $titleValue "510" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "512" "ae" "titleVariation" $title_c $titleValue "512" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "513" "ae" "titleVariation" $title_c $titleValue "513" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "514" "ae" "titleVariation" $title_c $titleValue "514" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "515" "ae" "titleVariation" $title_c $titleValue "515" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "516" "ae" "titleVariation" $title_c $titleValue "516" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "517" "ae" "titleVariation" $title_c $titleValue "517" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "520" "ae" "titleVariation" $title_c $titleValue "520" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "541" "ae" "titleVariation" $title_c $titleValue "541" "ae")
 
+	## probabilmente è un doppione
+	###oneTriple($root $cluster_uri "500" "s" $musicNumber)
+	
 #end
 
 
@@ -457,4 +512,14 @@
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "512" "a" "instanceTitle" $title_c $titleValue "512" "a" $titleType "" "Cover Title" $subtitle "512" "e")
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "511" "a" "instanceTitle" $title_c $titleValue "511" "a" $titleType "" "Half Title" $subtitle "511" "e")
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "510" "a" "instanceTitle" $title_c $titleValue "510" "a" $titleType "" "Parallel Title Proper" $subtitle "510" "e")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "510" "ae" "titleVariation" $title_c $titleValue "510" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "512" "ae" "titleVariation" $title_c $titleValue "512" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "513" "ae" "titleVariation" $title_c $titleValue "513" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "514" "ae" "titleVariation" $title_c $titleValue "514" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "515" "ae" "titleVariation" $title_c $titleValue "515" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "516" "ae" "titleVariation" $title_c $titleValue "516" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "517" "ae" "titleVariation" $title_c $titleValue "517" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "520" "ae" "titleVariation" $title_c $titleValue "520" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "541" "ae" "titleVariation" $title_c $titleValue "541" "ae")
+
 #triplesWithBlankNode($root $manifestation_s $language "101" "a" "language" $language_c $label "101" "a")

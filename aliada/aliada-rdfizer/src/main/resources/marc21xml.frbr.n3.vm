@@ -345,6 +345,12 @@
 #set($cartographicOuterGRing = "#bf('cartographicOuterGRing')")
 #set($cartographicProjection = "#bf('cartographicProjection')")
 #set($cartographicScale = "#bf('cartographicScale')")
+#set($titleVariation = "#bf('titleVariation')")
+#set($titleAttribute = "#bf('titleAttribute')")
+#set($musicNumber = "#bf('musicNumber')")
+#set($musicKey = "#bf('musicKey')")
+#set($musicVersion = "#bf('musicVersion')")
+#set($musicMediumNote = "#bf('musicMediumNote')")
 
 
 
@@ -404,6 +410,23 @@
 			#foreach($cluster_entry in $cluster.entries)
 				#if($cluster_entry.preferred)
 					#threeValue($cluster_uri $cluster_entry.heading "workTitle" $title_c $workTitle $titleValue $titleType "Preferred Title" $subtitle "") 
+					
+					##titleAttribute
+					#set($titleNode = "#uri_with_strong_normalization('workTitle' ${function.escape($cluster_entry.heading)})")
+					#set($_130s = $xpath.many("datafield[@tag='130']",$root))
+					#foreach($_130 in $_130s)
+						#set($v = $xpath.combine($_130, "g"))						
+						$titleNode $titleAttribute $values
+					#end
+					#set($_240s = $xpath.many("datafield[@tag='240']",$root))
+					#foreach($_240 in $_240s)
+						#set($values = $xpath.combine($_240, "g"))
+						#if(!$function.isNotNullAndNotEmpty($values))
+							$titleNode $titleAttribute $values .
+						#end
+					#end
+					##
+					
 					#setAuthorizedAccessPoint($root $cluster_uri $cluster_entry.heading)
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> . 
@@ -570,6 +593,28 @@
 	#triplesWithBlankNode($root $cluster_uri $cartography "255" "d" "cartography" $cartography_c $cartographicAscensionAndDeclination "255" "d" $cartographicCoordinates "255" "c" $cartographicEquinox "255" "e" $cartographicExclusionGRing "255" "g" $cartographicOuterGRing "255" "f" $cartographicProjection "255" "b" $cartographicScale "255" "a" )
 
 	
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "246" "ab" "titleVariation" $title_c $titleValue "246" "ab")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "247" "ab" "titleVariation" $title_c $titleValue "247" "ab")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "242" "ab" "titleVariation" $title_c $titleValue "242" "ab")
+	
+	## le seguenti coppie andranno in or?
+	#oneTriple($root $cluster_uri "130" "n" $musicNumber)
+	#oneTriple($root $cluster_uri "240" "n" $musicNumber)
+	
+	#oneTriple($root $cluster_uri "130" "r" $musicKey)
+	#oneTriple($root $cluster_uri "240" "r" $musicKey)
+	
+	#oneTriple($root $cluster_uri "130" "o" $musicVersion)
+	#oneTriple($root $cluster_uri "240" "o" $musicVersion)
+	
+	#oneTriple($root $cluster_uri "382" "adp" $musicMediumNote)
+	#oneTriple($root $cluster_uri "240" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "243" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "700" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "710" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "711" "m" $musicMediumNote)
+	#oneTriple($root $cluster_uri "730" "m" $musicMediumNote)
+	
 #end
 
 
@@ -605,6 +650,9 @@
 
 #triplesWithBlankNode($root $manifestation_s $keyTitle "222" "a" "keyTitle" $title_c $titleValue "222" "a" $titleType "" "Key Title" $titleQualifier "222" "b")
 #triplesWithBlankNode($root $manifestation_s $abbreviatedTitle "210" "a" "abbreviatedTitle" $title_c $titleValue "210" "a" $titleType "" "Abbreviated Title"  $titleQualifier "210" "b")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "246" "ab" "titleVariation" $title_c $titleValue "246" "ab")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "247" "ab" "titleVariation" $title_c $titleValue "247" "ab")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "242" "ab" "titleVariation" $title_c $titleValue "242" "ab")
 
 
 ##media category
