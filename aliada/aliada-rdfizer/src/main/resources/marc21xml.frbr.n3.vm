@@ -36,8 +36,6 @@
 #set($dissertationIdentifier = "#bf('dissertationIdentifier')")
 #set($classification = "#bf('classification')")
 #set($classification_c = "#bf('Classification')")
-#set($classificationNumber = "#bf('classificationNumber')")
-#set($classificationDdc = "#bf('classificationDdc')")
 #set($classificationEdition = "#bf('classificationEdition')")
 #set($classificationScheme = "#bf('classificationScheme')")
 #set($label = "#bf('label')")
@@ -161,14 +159,18 @@
 #set($agent_c = "#bf('Agent')")
 #set($relator_c = "#bf('Relator')")
 #set($relator = "#bf('relator')")	
+#set($classificationNumber = "#bf('classificationNumber')")
+#set($descriptionAuthentication = "#bf('descriptionAuthentication')")
+#set($categorySource = "#bf('categorySource')")
 		
 
 ## per mappare le opere collegata (es. supersedes, serie, relatedTo, ecc.)			
 #macro(work_related $s $tag $subfield $record $type $kind $predicate) 
-	#set($tagValues = $xpath.dfs($tag,$subfield,$record))
+	#set($tagValues = $xpath.many("datafield[@tag='$tag']", $record))
 	#foreach($tagValue in $tagValues) 
-		#if($tagValue) 
-    		#set($text = $function.escape($function.clean($tagValue.textContent)))
+		#set($value = $xpath.combine($tagValue, "$subfield"))
+		#if($function.isNotNullAndNotEmpty($value)) 
+    		#set($text = $function.escape($function.clean($value)))
         	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
         	$s1 $is_a $kind .         			
         	$s1 $label "$text" . 
@@ -296,13 +298,13 @@
 
 #macro(oneTripleInner $soggetto $predicate $_tag $field $tagDiscrimine)
 	#if($predicate)
-		#if($function.isNotNullAndNotEmpty($tagDiscrimine))
-			#set($fieldValue = $xpath.combine($_tag, "$field"))
+		#if($function.isNotNullAndNotEmpty($tagDiscrimine))	
+			#set($fieldValue = $xpath.combine($_tag, "$field"))	
 			#if($function.isNotNullAndNotEmpty($fieldValue))
 				$s1 $predicate "$fieldValue" .
 			#end
 		#else
-			#if($function.isNotNullAndNotEmpty($field))
+			#if($function.isNotNullAndNotEmpty($field))		
     			## allora in field non ho un sottocampo, ma un campo testuale statico
     			$s1 $predicate "$field" .
 			#end
@@ -481,10 +483,16 @@
 	
 	##marc21
 	##content category
+	
+	#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $categoryValue '336' 'a' $categoryValue '336' 'b' $categorySource '336' '2')
+	#triplesWithBlankNode($root $cluster_uri $contentCategory '337' 'a' 'Category' $category_c $categoryValue '337' 'a' $categoryValue '337' 'b' $categorySource '337' '2')
+	#triplesWithBlankNode($root $cluster_uri $contentCategory '338' 'a' 'Category' $category_c $categoryValue '338' 'a' $categoryValue '338' 'b' $categorySource '338' '2')
+	
+	
 	#set($triple = "")
-	#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $contentType '336' 'a')")
+	#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $contentType '336' 'a' $categorySource '336' '2')")
 	#if(!$triple || $triple == "")
-		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'b' 'Category' $category_c $contentType '336' 'b')")
+		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '337' 'b' 'Category' $category_c $contentType '337' 'b' $categorySource '337' '2')")
 	#end
 	#if(!$triple || $triple == "")
 		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '345' 'k' 'Category' $category_c $contentType '345' 'k')")
@@ -501,7 +509,7 @@
 	
 	##identificativi generici
 	#triplesWithBlankNode($root $cluster_uri $local "010" "ab" "identifier" $identifier_c $identifierValue "010" "ab" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/lccn>")
-	#triplesWithBlankNode($root $cluster_uri $local "015" "2" "identifier" $identifier_c $identifierValue "015" "2" $identifierAssigner "015" "2" $identifierQualifier "015" "q" $identifierStatus "015" "z")
+	#triplesWithBlankNode($root $cluster_uri $local "015" "a" "identifier" $identifier_c $identifierValue "015" "a" $identifierAssigner "015" "2" $identifierQualifier "015" "q" $identifierStatus "015" "z")
 	#triplesWithBlankNode($root $cluster_uri $local "016" "a" "identifier" $identifier_c $identifierValue "016" "a" $identifierAssigner "016" "2" $identifierStatus "016" "z")
 	#triplesWithBlankNode($root $cluster_uri $local "022" "almy" "identifier" $identifier_c $identifierValue "022" "almy" $identifierAssigner "022" "2")
 	#triplesWithBlankNode($root $cluster_uri $local "028" "a" "identifier" $identifier_c $identifierValue "028" "a" $identifierAssigner "028" "b" $identifierQualifier "028" "q")
@@ -572,23 +580,30 @@
 	#triplesWithBlankNode($root $cluster_uri $event "033" "ao" "Event" $event_c $label "033" "a"  $eventDate "033" "a" $ventPlace "033" "p"  $ventPlace "033" "bc")
 	
 	##penso vadano in OR le seguenti condizioni
+	
+	#triplesWithBlankNode($root $cluster_uri $classification "084" "a" "classification" $classification_c $classificationNumber "084" "a"  $label "084" "a" $classificationScheme "084" "2")
+	
+	
 	##classification ddc
-	#triplesWithBlankNode($root $cluster_uri $classificationDdc "082" "a" "ddc" $classification_c $classificationNumber "082" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
-	#triplesWithBlankNode($root $cluster_uri $classificationDdc "083" "ac" "ddc" $classification_c $classificationNumber "083" "ac" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
+
+	#triplesWithBlankNode($root $cluster_uri $classificationDdc "082" "a" "ddc" $classification_c $classificationNumber "082" "a"  $label "082" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
+	#triplesWithBlankNode($root $cluster_uri $classificationDdc "083" "ac" "ddc" $classification_c $classificationNumber "083" "ac" $label "083" "ac" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
+
 	
 	##penso vadano in OR le seguenti condizioni
 	##classification Llc
-	#oneTripleWithUri($root $cluster_uri "050" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
-	#oneTripleWithUri($root $cluster_uri "055" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
-	#oneTripleWithUri($root $cluster_uri "052" "ab" $classificationLcc "<http://id.loc.gov/authorities/classification")
+	#oneTripleWithUri($root $cluster_uri "050" "a" $classificationLcc "<http://id.loc.gov/authorities/classification/")
+	#oneTripleWithUri($root $cluster_uri "055" "a" $classificationLcc "<http://id.loc.gov/authorities/classification/")
+	#oneTripleWithUri($root $cluster_uri "052" "ab" $classificationLcc "<http://id.loc.gov/authorities/classification/")
 	
 	
 	##classification udc
 	#triplesWithBlankNode($root $cluster_uri $classificationUdc "080" "a" "udc" $classification_c $classificationNumber "080" "a" $classificationScheme "" "classificationUdc")
 	
 	##classification Nlm
-	#oneTripleWithUri($root $cluster_uri "060" "a" $classificationNlm "<http://nlm.example.org/classification")
+	#oneTripleWithUri($root $cluster_uri "060" "a" $classificationNlm "<http://nlm.example.org/classification/")
 
+	#oneTripleWithUri($root $cluster_uri "042" "a" $descriptionAuthentication "<http://id.loc.gov/vocabulary/descriptionAuthentication/")
 	
 	##classification isnnL
 	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
@@ -698,7 +713,9 @@
 	#work_related($cluster_uri "780" "at" $root $relatedWork $work_c $precededBy)
 	#work_related($cluster_uri "785" "at" $root $relatedWork $work_c $succeededBy)
 	#work_related($cluster_uri "777" "at" $root $relatedWork $work_c $issuedWith)
-	
+
+	#work_related($cluster_uri "490" "av" $root $relatedWork $work_c $series)
+
 	
 	
 	
@@ -848,18 +865,26 @@ $triple
 #oneTriple($root $manifestation_s "541" "3abcdfhno" $immediateAcquisition)
 #oneTriple($root $manifestation_s "37" "abcf" $immediateAcquisition)
 
-##formatOfMusic
+##tag 008
+#set($genreString = "")
 #set($_008 = $xpath.cf('008', $root))
 #foreach($character in $_008.toCharArray())
-	#if($velocityCount == 20)
+	#if($velocityCount == 24 || $velocityCount == 25 || $velocityCount == 26 || $velocityCount == 27)
+		#set($genreString = "${genreString}${character}")
+	#elseif($velocityCount == 20 && $function.isNotNullAndNotEmpty($character))
+		##formatofMusic
 		$manifestation_s $formatOfMusic "$character".
 	#end
+#end
+##genre
+#if($function.isNotNullAndNotEmpty($genreString))
+	#triplesWithBlankNode($root $cluster_uri $genre "008" "" "genre" $category_c $categoryValue "" "$genreString")
 #end
 	
 ##heldItem
 #triplesWithBlankNode($root $manifestation_s $heldItem "852" "2" $heldItem_c $shelfMarkScheme "852" "2")
 
-#oneTripleWithUri($root $manifestation_s "040" "e" $descriptionConventions "")
+#oneTripleWithUri($root $manifestation_s "040" "e" $descriptionConventions "<http://id.loc.gov/vocabulary/descriptionConventions/")
 #oneTripleWithUri($root $manifestation_s "040" "b" $descriptionLanguage "")
-#oneTripleWithUri($root $manifestation_s "040" "a" $descriptionSource "")
+#oneTripleWithUri($root $manifestation_s "040" "a" $descriptionSource "<http://id.loc.gov/vocabulary/organizations/")
 
