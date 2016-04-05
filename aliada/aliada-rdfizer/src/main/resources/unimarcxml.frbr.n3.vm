@@ -108,8 +108,28 @@
 #set($creditsNote = "#bf('creditsNote')")
 #set($performerNote = "#bf('performerNote')")
 #set($immediateAcquisition = "#bf('immediateAcquisition')")
+#set($precededBy = "#bf('precededBy')")
+#set($succeededBy = "#bf('succeededBy')")
+#set($issuedWith = "#bf('issuedWith')")
+#set($contributor = "#bf('contributor')")
+#set($agent_c = "#bf('Agent')")
+#set($relator_c = "#bf('Relator')")
+#set($relator = "#bf('relator')")		
 		
-		
+#macro(work_related $s $tag $subfield $record $type $kind $predicate) 
+	#set($tagValues = $xpath.dfs($tag,$subfield,$record))
+	#foreach($tagValue in $tagValues) 
+		#if($tagValue) 
+    		#set($text = $function.escape($function.clean($tagValue.textContent)))
+        	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
+        	$s1 $is_a $kind .         			
+        	$s1 $label "$text" . 
+        	$s $predicate $s1 . 
+		#end	
+	#end	
+#end	
+
+
 		
 ##mappa la relazione tra un nodo ed una tripla complessa, contenent un attributo
 #macro(oneValue $s $firstValue $type $kind $predicate $label1) 	
@@ -216,7 +236,11 @@
 	#foreach($_tag in $_tags)		
         #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))
 		#if($function.isNotNullAndNotEmpty($fieldValue))
-			$soggetto $predicate $uri/$fieldValue> .		
+			#set($eventualAngularParentesis = "")
+			#if(!$function.isNotNullAndNotEmpty($uri)) 				
+				#set($eventualAngularParentesis = "<")
+			#end
+			$soggetto $predicate $eventualAngularParentesis$uri$fieldValue> .	
 		#end
 	#end
 #end
@@ -225,7 +249,7 @@
 	#if($predicate)
 		#if($function.isNotNullAndNotEmpty($tagDiscrimine))
 			#set($fieldValue = $xpath.combine($_tag, "$field"))
-			#if($fieldValue)
+			#if($function.isNotNullAndNotEmpty($fieldValue))
 				$s1 $predicate "$fieldValue" .
 			#end
 		#else
@@ -479,8 +503,8 @@
 	#triplesWithBlankNode($root $cluster_uri $classificationUdc "675" "a" "udc" $classification_c $classificationNumber "675" "a" $classificationScheme "" "classificationUdc")
 	#triplesWithBlankNode($root $cluster_uri $classificationDdc "676" "a" "ddc" $classification_c $classificationNumber "676" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
 	
-	#oneTripleWithUri($root $cluster_uri "680" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
-	#oneTripleWithUri($root $cluster_uri "686" "a" $classificationNlm "<http://nlm.example.org/classification")
+	#oneTripleWithUri($root $cluster_uri "680" "a" $classificationLcc "<http://id.loc.gov/authorities/classification/")
+	#oneTripleWithUri($root $cluster_uri "686" "a" $classificationNlm "<http://nlm.example.org/classification/")
 
 	##genre
 	##in realtà bisogna selezionare solo la poszione 4-7 del $a
@@ -489,15 +513,15 @@
 	##cartography
 	#triplesWithBlankNode($root $cluster_uri $cartography "206" "e" "cartography" $cartography_c $cartographicAscensionAndDeclination "206" "e" $cartographicCoordinates "206" "d" $cartographicEquinox "206" "f" $cartographicProjection "206" "c" $cartographicScale "206" "b" )
 
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "510" "ae" "titleVariation" $title_c $titleValue "510" "ae")
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "512" "ae" "titleVariation" $title_c $titleValue "512" "ae")
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "513" "ae" "titleVariation" $title_c $titleValue "513" "ae")
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "514" "ae" "titleVariation" $title_c $titleValue "514" "ae")
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "515" "ae" "titleVariation" $title_c $titleValue "515" "ae")
-    #triplesWithBlankNode($root $manifestation_s $titleVariation "516" "ae" "titleVariation" $title_c $titleValue "516" "ae")
-    #triplesWithBlankNode($root $manifestation_s $titleVariation "517" "ae" "titleVariation" $title_c $titleValue "517" "ae")
-    #triplesWithBlankNode($root $manifestation_s $titleVariation "520" "ae" "titleVariation" $title_c $titleValue "520" "ae")
-    #triplesWithBlankNode($root $manifestation_s $titleVariation "541" "ae" "titleVariation" $title_c $titleValue "541" "ae")
+	#triplesWithBlankNode($root $cluster_uri $titleVariation "510" "ae" "titleVariation" $title_c $titleValue "510" "ae")
+	#triplesWithBlankNode($root $cluster_uri $titleVariation "512" "ae" "titleVariation" $title_c $titleValue "512" "ae")
+	#triplesWithBlankNode($root $cluster_uri $titleVariation "513" "ae" "titleVariation" $title_c $titleValue "513" "ae")
+	#triplesWithBlankNode($root $cluster_uri $titleVariation "514" "ae" "titleVariation" $title_c $titleValue "514" "ae")
+	#triplesWithBlankNode($root $cluster_uri $titleVariation "515" "ae" "titleVariation" $title_c $titleValue "515" "ae")
+    #triplesWithBlankNode($root $cluster_uri $titleVariation "516" "ae" "titleVariation" $title_c $titleValue "516" "ae")
+    #triplesWithBlankNode($root $cluster_uri $titleVariation "517" "ae" "titleVariation" $title_c $titleValue "517" "ae")
+    #triplesWithBlankNode($root $cluster_uri $titleVariation "520" "ae" "titleVariation" $title_c $titleValue "520" "ae")
+    #triplesWithBlankNode($root $cluster_uri $titleVariation "541" "ae" "titleVariation" $title_c $titleValue "541" "ae")
 
 	#oneTriple($root $cluster_uri "328" "a" $dissertationDegree)
 	#oneTriple($root $cluster_uri "328" "a" $dissertationInstitution)
@@ -505,6 +529,172 @@
 	
 	## probabilmente è un doppione
 	###oneTriple($root $cluster_uri "500" "s" $musicNumber)
+	
+	##contributor
+	#set($_701s = $xpath.many("datafield[@tag='701']",$root))	
+	#foreach($_701 in $_701s)			
+		#set($_701_4 = $function.escape($xpath.combine($_701, "4")))
+		#if(!$function.isNotNullAndNotEmpty($_701_4))
+			#triplesWithBlankNode($root $cluster_uri $contributor "701" "a" "contributor" $agent_c $label "701" "a")
+		#else
+			#triplesWithBlankNode($root $cluster_uri $relator "701" "a" "relator" $relator_c $label "701" "a")
+		#end	
+	#end
+	
+	#set($_702s = $xpath.many("datafield[@tag='702']",$root))	
+	#foreach($_702 in $_702s)			
+		#set($_702_4 = $function.escape($xpath.combine($_702, "4")))
+		#if(!$function.isNotNullAndNotEmpty($_702_4))
+			#triplesWithBlankNode($root $cluster_uri $contributor "702" "a" "contributor" $agent_c $label "702" "a")
+		#else
+			#triplesWithBlankNode($root $cluster_uri $relator "702" "a" "relator" $relator_c $label "702" "a")
+		#end	
+	#end
+	
+	#set($_711s = $xpath.many("datafield[@tag='711']",$root))	
+	#foreach($_711 in $_711s)			
+		#set($_711_4 = $function.escape($xpath.combine($_711, "4")))
+		#if(!$function.isNotNullAndNotEmpty($_711_4))
+			#triplesWithBlankNode($root $cluster_uri $contributor "711" "a" "contributor" $agent_c $label "711" "a")
+		#else
+			#triplesWithBlankNode($root $cluster_uri $relator "711" "a" "relator" $relator_c $label "711" "a")
+		#end	
+	#end
+	
+	#set($_712s = $xpath.many("datafield[@tag='712']",$root))	
+	#foreach($_712 in $_712s)			
+		#set($_712_4 = $function.escape($xpath.combine($_712, "4")))
+		#if(!$function.isNotNullAndNotEmpty($_712_4))
+			#triplesWithBlankNode($root $cluster_uri $contributor "712" "a" "contributor" $agent_c $label "712" "a")
+		#else
+			#triplesWithBlankNode($root $cluster_uri $relator "712" "a" "relator" $relator_c $label "712" "a")
+		#end	
+	#end
+	
+	#set($_721s = $xpath.many("datafield[@tag='721']",$root))	
+	#foreach($_721 in $_721s)			
+		#set($_721_4 = $function.escape($xpath.combine($_721, "4")))
+		#if(!$function.isNotNullAndNotEmpty($_721_4))
+			#triplesWithBlankNode($root $cluster_uri $contributor "721" "a" "contributor" $agent_c $label "721" "a")
+		#else
+			#triplesWithBlankNode($root $cluster_uri $relator "721" "a" "relator" $relator_c $label "721" "a")
+		#end	
+	#end
+	
+	#set($_722s = $xpath.many("datafield[@tag='722']",$root))	
+	#foreach($_722 in $_722s)			
+		#set($_722_4 = $function.escape($xpath.combine($_722, "4")))
+		#if(!$function.isNotNullAndNotEmpty($_722_4))
+			#triplesWithBlankNode($root $cluster_uri $contributor "722" "a" "contributor" $agent_c $label "722" "a")
+		#else
+			#triplesWithBlankNode($root $cluster_uri $relator "722" "a" "relator" $relator_c $label "722" "a")
+		#end	
+	#end
+	
+	
+	            ##relatedWork 
+			#work_related($cluster_uri "430" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "431" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "432" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "433" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "434" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "435" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "436" "at" $root $relatedWork $work_c $precededBy)
+			#work_related($cluster_uri "437" "at" $root $relatedWork $work_c $precededBy)
+			
+			#work_related($cluster_uri "440" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "441" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "442" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "443" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "444" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "445" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "446" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "447" "at" $root $relatedWork $work_c $succeededBy)
+			#work_related($cluster_uri "448" "at" $root $relatedWork $work_c $succeededBy)
+			
+			#work_related($cluster_uri "423" "at" $root $relatedWork $work_c $issuedWith)
+			#*
+			
+            #work_related($cluster_uri "455" "t" $root "relatedWork" $work_c $relatedWork)
+            #work_related($cluster_uri "456" "t" $root "relatedWork" $work_c $relatedWork)
+            #work_related($cluster_uri "470" "t" $root "relatedWork" $work_c $relatedWork)
+            #work_related($cluster_uri "488" "t" $root "relatedWork" $work_c $relatedWork)				
+                                		
+            ##series
+            #work_related($cluster_uri "255" "ahi" $root "series" $work_c $series)							
+                				
+            ##subseries
+            #work_related($cluster_uri "411" "t" $root "subseries" $work_c $subseries)
+                
+            ##subseriesOf
+            #work_related($cluster_uri "410" "t" $root "subseriesOf" $work_c $subseriesOf)                
+                
+            ##supplement
+            #work_related($cluster_uri "421" "t" $root "supplement" $work_c $supplement)                
+                
+            ##supplementTo
+            #work_related($cluster_uri "422" "t" $root "supplementTo" $work_c $supplementTo)                
+                
+            ##translation
+            #work_related($cluster_uri "453" "t" $root "translation" $work_c $translation)
+                
+            ##translationOf
+            #work_related($cluster_uri "454" "t" $root "translationOf" $work_c $translationOf)
+                
+            ##otherEdition
+            #work_related($cluster_uri "451" "t" $root "otherEdition" $work_c $otherEdition)                 
+                
+            ##absorbedInPart
+            #work_related($cluster_uri "435" "t" $root "absorbedInPart" $work_c $absorbedInPart)
+                                
+            ##separetedFrom
+            #work_related($cluster_uri "437" "t" $root "separatedFrom" $work_c $separatedFrom)
+                
+            ##supersedes
+            #work_related($cluster_uri "432" "t" $root "supersedes" $work_c $supersedes)                
+                
+            ##supersedesInPart
+            #work_related($cluster_uri "433" "t" $root "supersedesInPart" $work_c $supersedesInPart)
+                
+            ##unionOf
+            #work_related($cluster_uri "436" "t" $root "unionOf" $work_c $unionOf)
+                
+            ##continues
+            #work_related($cluster_uri "430" "t" $root "continues" $work_c $continues)
+                
+            ##continuesInPart
+            #work_related($cluster_uri "431" "t" $root "continuesInPart" $work_c $continuesInPart)
+                
+            ##absorbed
+            #work_related($cluster_uri "434" "t" $root "absorbed" $work_c $absorbed)
+                
+            ##absorbedBy
+            #work_related($cluster_uri "444" "t" $root "absorbedBy" $work_c $absorbedBy)
+                
+            ##continuedBy
+            #work_related($cluster_uri "440" "t" $root "continuedBy" $work_c $continuedBy)               
+            #work_related($cluster_uri "448" "t" $root "continuedBy" $work_c $continuedBy)               
+            	
+            ##continuedInPartBy
+            #work_related($cluster_uri "441" "t" $root "continuedInPartBy" $work_c $continuedInPartBy)               
+                
+            ##absorbedInPartBy                
+            #work_related($cluster_uri "445" "t" $root "absorbedInPartBy" $work_c $absorbedInPartBy)
+                
+            ##mergedToForm
+            #work_related($cluster_uri "447" "t" $root "mergedToForm" $work_c $mergedToForm)
+                
+            ##splitInto               
+            #work_related($cluster_uri "446" "t" $root "splitInto" $work_c $splitInto)                
+                
+            ##supersededBy
+            #work_related($cluster_uri "442" "t" $root "supersededBy" $work_c $supersededBy)                
+                
+            ##supersededInPartBy
+            #work_related($cluster_uri "443" "t" $root "supersededInPartBy" $work_c $supersededInPartBy)		
+			*#	
+	
+	
 	
 #end
 
@@ -564,4 +754,3 @@
 #oneTriple($root $manifestation_s "323" "a" $performerNote)
 
 #oneTriple($root $manifestation_s "345" "abcd" $immediateAcquisition)
-
