@@ -4,7 +4,6 @@
 
 #set($manifestation_s = "#uri('Instance' $frbr.manifestationID)") 
 #set($is_a = "#rdf('type')")
-#set($work_c = "#bf('Work')") 
 #set($local = "#bf('local')")
 #set($identifier_c = "#bf('Identifier')")
 #set($identifierAssigner = "#bf('identifierAssigner')")
@@ -715,10 +714,6 @@
 	#work_related($cluster_uri "777" "at" $root $relatedWork $work_c $issuedWith)
 
 	#work_related($cluster_uri "490" "av" $root $relatedWork $work_c $series)
-
-	
-	
-	
 	
 #end
 
