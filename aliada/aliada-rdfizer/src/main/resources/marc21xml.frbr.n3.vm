@@ -161,6 +161,14 @@
 #set($classificationNumber = "#bf('classificationNumber')")
 #set($descriptionAuthentication = "#bf('descriptionAuthentication')")
 #set($categorySource = "#bf('categorySource')")
+#set($lccn = "#bf('lccn')")
+#set($isbn = "#bf('isbn')")
+#set($isbn10 = "#bf('isbn10')")
+#set($isbn13 = "#bf('isbn13')")
+#set($shelfMarkLcc = "#bf('shelfMarkLcc')")
+#set($work_c = "#bf('Work')")
+
+
 		
 
 ## per mappare le opere collegata (es. supersedes, serie, relatedTo, ecc.)			
@@ -270,6 +278,40 @@
 #end
 
 
+#macro (triplesWithBlankOne $root $soggetto $predicato $_tag  $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+	#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+	#end
+#end
+
+
+
 #macro(oneTriple $root $soggetto $tag $field $predicate)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
 	#foreach($_tag in $_tags)		
@@ -313,69 +355,103 @@
 
 
 
-#macro(setAuthorizedAccessPoint $root $cluster_uri $title)
-	#set($_700s = $xpath.many("datafield[@tag='700']",$root))	
-	#foreach($_700 in $_700s)			
-		#set($_v700 = $function.escape($xpath.combine($_700, "abcdfg")))		
-	#end
-    #set($_701s = $xpath.many("datafield[@tag='701']", $root))		
-	#set($_v701 = "")
-	#foreach($_701 in $_701s)		
-		#set($_v701temp = $function.escape($xpath.combine($_701, "abcdfg")))
-		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
-		#if(!$function.isNotNullAndNotEmpty($_v701))
-			#set($_v701 = "${_v701}${_v701temp}")
-		#else
-			#set($_v701 = "${_v701}  ${_v701temp}")
-		#end
-	#end
-    #set($_710s = $xpath.many("datafield[@tag='710']", $root))	
-	#foreach($_710 in $_710s)
-		#set($_v710 = $function.escape($xpath.combine($_710, "abe")))	
-	#end
-    #set($_711s = $xpath.many("datafield[@tag='711']", $root))
-	#set($_v711 = "")
-	#foreach($_711 in $_711s)		
-		#set($_v711temp = $function.escape($xpath.combine($_711, "abe")))	
-		#if(!$function.isNotNullAndNotEmpty($_v711))
-			#set($_v711 = "${_v711}${_v711temp}")
-		#else
-			#set($_v711 = "${_v711}  ${_v711temp}")
-		#end
-	#end
-    #set($_720s = $xpath.many("datafield[@tag='720']", $root))
-	#foreach($_720 in $_720s)
-		#set($_v720 = $function.escape($xpath.combine($_720, "a")))	
-	#end
-    #set($_721s = $xpath.many("datafield[@tag='721']", $root))
-	#set($_v721 = "")
-	#foreach($_721 in $_721s)		
-		#set($_v721temp = $function.escape($xpath.combine($_721, "a")))
-		#if(!$function.isNotNullAndNotEmpty($_v721))
-			#set($_v721 = "${_v721}${_v721temp}")
-		#else
-			#set($_v721 = "${_v721}  ${_v721temp}")
-		#end
-	#end
-	     
+#macro(setAuthorizedAccessPoint $root $cluster_uri)
 	
+    ######## primo addendo #########
+    #set($_100s = $xpath.many("datafield[@tag='100']", $root))		
+	#set($_v100 = "")
+	#foreach($_100 in $_100s)		
+		#set($_v100temp = $function.escape($xpath.combine($_100, "abcdjq")))
+		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
+		#if(!$function.isNotNullAndNotEmpty($_v100))
+			#set($_v100 = "${_v100}${_v100temp}")
+		#else
+			#set($_v100 = "${_v100}  ${_v100temp}")
+		#end
+	#end	
+   
+    #set($_110s = $xpath.many("datafield[@tag='110']", $root))
+	#set($_v110 = "")
+	#foreach($_110 in $_110s)		
+		#set($_v110temp = $function.escape($xpath.combine($_110, "abc")))	
+		#if(!$function.isNotNullAndNotEmpty($_v110))
+			#set($_v110 = "${_v110}${_v110temp}")
+		#else
+			#set($_v110 = "${_v110}  ${_v110temp}")
+		#end
+	#end
+  	     
+	    #set($_111s = $xpath.many("datafield[@tag='111']", $root))
+	#set($_v111 = "")
+	#foreach($_111 in $_111s)		
+		#set($_v111temp = $function.escape($xpath.combine($_111, "acdeq")))	
+		#if(!$function.isNotNullAndNotEmpty($_v111))
+			#set($_v111 = "${_v111}${_v111temp}")
+		#else
+			#set($_v111 = "${_v111}  ${_v111temp}")
+		#end
+	#end	
 	## setto il primo addendo della somma del mapping
           
-	#if($function.isNotNullAndNotEmpty($_v700)) 
-		#set($firstAddend = $_v700)
-	#elseif($function.isNotNullAndNotEmpty($_v701))	
-		#set($firstAddend = $_v701)
-	#elseif($function.isNotNullAndNotEmpty($_v710))
-		#set($firstAddend = $_v710)
-	#elseif( $function.isNotNullAndNotEmpty($_v711))
-		#set($firstAddend = $_v711)
-	#elseif( $function.isNotNullAndNotEmpty($_v720))
-		#set($firstAddend = $_v720)
-	#else
-		#set($firstAddend = $_v721)		
+	#if($function.isNotNullAndNotEmpty($_v100)) 
+		#set($firstAddend = $_v100)
+	#elseif($function.isNotNullAndNotEmpty($_v110))	
+		#set($firstAddend = $_v110)
+	#elseif( $function.isNotNullAndNotEmpty($_v111))
+		#set($firstAddend = $_v111)	
+	#else 
+		#set($firstAddend = "")	
+	#end	
+	 ######## fine primo addendo ###########################################
+	 
+	 ######### secondo addendo #############################################
+	#set($_240s = $xpath.many("datafield[@tag='240']", $root))		
+	#set($_v240 = "")
+	#foreach($_240 in $_240s)		
+		#set($_v240temp = $function.escape($xpath.combine($_240, "adfgklmnopqrs")))
+		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
+		#if(!$function.isNotNullAndNotEmpty($_v240))
+			#set($_v240 = "${_v240}${_v240temp}")
+		#else
+			#set($_v240 = "${_v240}  ${_v240temp}")
+		#end
+	#end
+	
+	#set($_245s = $xpath.many("datafield[@tag='245']", $root))		
+	#set($_v245 = "")
+	#foreach($_245 in $_245s)		
+		#set($_v245temp = $function.escape($xpath.combine($_245, "afgknps")))
+		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
+		#if(!$function.isNotNullAndNotEmpty($_v245))
+			#set($_v245 = "${_v245}${_v245temp}")
+		#else
+			#set($_v245 = "${_v245}  ${_v245temp}")
+		#end
+	#end
+	
+	#set($_130s = $xpath.many("datafield[@tag='130']", $root))		
+	#set($_v130 = "")
+	#foreach($_130 in $_130s)		
+		#set($_v130temp = $function.escape($xpath.combine($_130, "adfgklmnoprs")))
+		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
+		#if(!$function.isNotNullAndNotEmpty($_v130))
+			#set($_v130 = "${_v130}${_v130temp}")
+		#else
+			#set($_v130 = "${_v130}  ${_v130temp}")
+		#end
+	#end
+	## setto il secondo addendo della somma del mapping
+	#if($function.isNotNullAndNotEmpty($_v240)) 
+		#set($secondAddend = $_v240)
+	#elseif($function.isNotNullAndNotEmpty($_v245))	
+		#set($secondAddend = $_v245)
+	#elseif( $function.isNotNullAndNotEmpty($_v130))
+		#set($secondAddend = $_v130)	
 	#end	
 	
-	$cluster_uri $authorizedAccessPoint "$firstAddend. $title" .
+	
+	 ###########fine secondo addendo############
+	$cluster_uri $authorizedAccessPoint "$firstAddend $secondAddend " .
 #end
 	
 
@@ -452,9 +528,7 @@
 							$titleNode $titleAttribute $values .
 						#end
 					#end
-					##
-					
-					#setAuthorizedAccessPoint($root $cluster_uri $cluster_entry.heading)
+					##								
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> . 
 					#set($firstTimeViaf = false)
@@ -478,8 +552,9 @@
 
 ##All WORK
 #foreach($w in $frbr.flatWorkIDs)
-	#set($cluster_uri = "#uri_literal('Work' ${w.id})")
+	#set($cluster_uri = "#uri_literal('Work' ${w.id})")	
 	
+	#setAuthorizedAccessPoint($root $cluster_uri)	
 	##marc21
 	##content category
 	
@@ -507,7 +582,7 @@
 	#triplesWithBlankNode($root $cluster_uri $dissertationIdentifier "502" "o" "issnL" $identifier_c $identifierValue "502" "o")
 	
 	##identificativi generici
-	#triplesWithBlankNode($root $cluster_uri $local "010" "ab" "identifier" $identifier_c $identifierValue "010" "ab" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/lccn>")
+	#triplesWithBlankNode($root $cluster_uri $lccn "010" "ab" "identifier" $identifier_c $identifierValue "010" "ab" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/lccn>")
 	#triplesWithBlankNode($root $cluster_uri $local "015" "a" "identifier" $identifier_c $identifierValue "015" "a" $identifierAssigner "015" "2" $identifierQualifier "015" "q" $identifierStatus "015" "z")
 	#triplesWithBlankNode($root $cluster_uri $local "016" "a" "identifier" $identifier_c $identifierValue "016" "a" $identifierAssigner "016" "2" $identifierStatus "016" "z")
 	#triplesWithBlankNode($root $cluster_uri $local "022" "almy" "identifier" $identifier_c $identifierValue "022" "almy" $identifierAssigner "022" "2")
@@ -516,7 +591,30 @@
 	#triplesWithBlankNode($root $cluster_uri $local "017" "a" "identifier" $identifier_c $identifierValue "017" "a" $identifierAssigner "017" "b" $identifierStatus "017" "z")
 	#triplesWithBlankNode($root $cluster_uri $local "036" "a" "identifier" $identifier_c $identifierValue "036" "a" $identifierAssigner "036" "b")
 	#triplesWithBlankNode($root $cluster_uri $local "037" "a" "identifier" $identifier_c $identifierValue "037" "a" $identifierAssigner "037" "b" $identifierQualifier "037" "cfg")
-	#triplesWithBlankNode($root $cluster_uri $local "020" "a" "identifier" $identifier_c $identifierValue "020" "a" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
+	
+	## isbn
+	#set($_020s = $xpath.many("datafield[@tag='020']",$root))
+	#foreach($_020 in $_020s)			
+        #set($fieldValue = $function.escape($xpath.combine($_020, "a")))			
+		#if($function.isNotNullAndNotEmpty($fieldValue))
+			#set($substring = $fieldValue)
+			#if($fieldValue.indexOf(' ') > 0)
+				#set($substring = $fieldValue.substring(0, $fieldValue.indexOf(' ')))
+			#end		
+			#if($substring.length() == 10)				
+				#triplesWithBlankOne($root $cluster_uri $isbn10 $_020 "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")				
+			#elseif ($substring.length() == 13)				
+				#triplesWithBlankOne($root $cluster_uri $isbn13 $_020 "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
+			#else				
+				#triplesWithBlankOne($root $cluster_uri $isbn $_020 "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")	
+			#end
+		#end
+	#end
+	
+	
+	##triplesWithBlankNode($root $cluster_uri $isbn "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
+	##triplesWithBlankNode($root $cluster_uri $isbn10 "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
+	##triplesWithBlankNode($root $cluster_uri $isbn13 "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
 	#triplesWithBlankNode($root $cluster_uri $local "027" "a" "identifier" $identifier_c $identifierValue "027" "a" $identifierQualifier "027" "q" )
 	#triplesWithBlankNode($root $cluster_uri $local "024" "a" "identifier" $identifier_c $identifierValue "024" "a" $identifierQualifier "024" "cq" $identifierStatus "024" "z")
 	#triplesWithBlankNode($root $cluster_uri $systemNumber "035" "a" "identifier" $identifier_c $identifierValue "036" "a") 
@@ -877,9 +975,10 @@ $triple
 #end
 	
 ##heldItem
-#triplesWithBlankNode($root $manifestation_s $heldItem "852" "2" $heldItem_c $shelfMarkScheme "852" "2")
+#triplesWithBlankNode($root $manifestation_s $heldItem "852" "2" "heldItem" $heldItem_c $shelfMarkScheme "852" "2")
+#triplesWithBlankNode($root $manifestation_s $heldItem "050" "ab" "heldItem" $heldItem_c $shelfMarkLcc "050" "ab" $label "050" "ab")
+
 
 #oneTripleWithUri($root $manifestation_s "040" "e" $descriptionConventions "<http://id.loc.gov/vocabulary/descriptionConventions/")
 #oneTripleWithUri($root $manifestation_s "040" "b" $descriptionLanguage "")
 #oneTripleWithUri($root $manifestation_s "040" "a" $descriptionSource "<http://id.loc.gov/vocabulary/organizations/")
-
