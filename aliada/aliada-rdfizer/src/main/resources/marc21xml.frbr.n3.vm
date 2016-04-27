@@ -322,6 +322,18 @@
 	#end
 #end
 
+
+#macro(oneTripleCleaned $root $soggetto $tag $field $predicate)
+	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
+	#foreach($_tag in $_tags)		
+        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))		
+		#if($function.isNotNullAndNotEmpty($fieldValue))		
+			#set($fieldValue = $function.fixPunctuatorMarc21($fieldValue))
+			$soggetto $predicate "$fieldValue" .			
+		#end
+	#end
+#end
+
 #macro(oneTripleWithUri $root $soggetto $tag $field $predicate $uri)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
 	#foreach($_tag in $_tags)		
@@ -912,8 +924,8 @@ $triple
 #oneTriple($root $manifestation_s "340" "abcdefhljkmno" $format)
 
 ##providerStatement
-#oneTriple($root $manifestation_s "260" "abc" $providerStatement)
-#oneTriple($root $manifestation_s "264" "abc" $providerStatement)
+#oneTripleCleaned($root $manifestation_s "260" "abc" $providerStatement)
+#oneTripleCleaned($root $manifestation_s "264" "abc" $providerStatement)
 
 ##frequencyNote
 #oneTriple($root $manifestation_s "321" "ab" $frequencyNote)
