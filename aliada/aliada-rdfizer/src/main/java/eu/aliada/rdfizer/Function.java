@@ -338,4 +338,9 @@ public class Function {
 	public String clean(final String value){
 		return Strings.clean(value);
 	}
+	
+	public String removePunct (final String text){		
+		String lastChar = String.valueOf(text.charAt(text.length()-1));
+		return ":".equals(lastChar) ? text.substring(0, text.length()-2) : text; 	
+	}
 }

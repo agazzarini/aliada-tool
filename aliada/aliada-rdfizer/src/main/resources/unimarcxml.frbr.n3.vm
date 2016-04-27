@@ -422,10 +422,10 @@
 	#foreach($_245 in $_245s)		
 		#set($_v245temp = $function.escape($xpath.combine($_245, "afgknps")))
 		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
-		#if(!$function.isNotNullAndNotEmpty($_v245))
-			#set($_v245 = "${_v245}${_v245temp}")
+		#if(!$function.isNotNullAndNotEmpty($_v245))			
+			#set($_v245 = "${_v245}${_v245temp}")		
 		#else
-			#set($_v245 = "${_v245}  ${_v245temp}")
+			#set($_v245 = "${_v245}  ${_v245temp}")		
 		#end
 	#end
 	
@@ -444,14 +444,17 @@
 	#if($function.isNotNullAndNotEmpty($_v240)) 
 		#set($secondAddend = $_v240)
 	#elseif($function.isNotNullAndNotEmpty($_v245))	
-		#set($secondAddend = $_v245)
+		#set($secondAddend = $function.removePunct($_v245))
 	#elseif( $function.isNotNullAndNotEmpty($_v130))
 		#set($secondAddend = $_v130)	
 	#end	
 	
-	
+	#set($space = "")
+	#if($function.isNotNullAndNotEmpty($secondAddend) && $function.isNotNullAndNotEmpty($firstAddend)) 		
+		#set($space = " ")
+	#end
 	 ###########fine secondo addendo############
-	$cluster_uri $authorizedAccessPoint "$firstAddend $secondAddend " .
+	$cluster_uri $authorizedAccessPoint "$firstAddend$space$secondAddend" .
 #end
 	
 
