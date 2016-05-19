@@ -29,6 +29,7 @@
 #set($P103_was_intended_for  = "#ecrm('P103_was_intended_for')")
 #set($F24_Publication_Expression = "#efrbroo('F24_Publication_Expression')")
 
+
 $work_s $is_a #efrbroo('F1_Work') . 
 $work_s $is_a #ecrm("E89_PropositionalObject") . 
 $expression_s $is_a #efrbroo('F2_Expression') . 

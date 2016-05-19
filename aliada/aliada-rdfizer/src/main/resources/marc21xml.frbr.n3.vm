@@ -278,6 +278,45 @@
 #end
 
 
+##per ora legge solo il secondo indicatore
+#macro(triples_blank_indicators $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $indicator2 $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode'| @ind2='$indicator2']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+		#end
+	#end
+#end
+
+
+
+
 #macro (triplesWithBlankOne $root $soggetto $predicato $_tag  $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
 	#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
 		
@@ -540,7 +579,7 @@
 					#foreach($_240 in $_240s)
 						#set($values = $xpath.combine($_240, "g"))
 						#if(!$function.isNotNullAndNotEmpty($values))
-							$titleNode $titleAttribute $values .
+							$titleNode $titleAttribute "$values" .
 						#end
 					#end
 					##								
@@ -853,6 +892,17 @@
 ##marc21
 ##istance title (che probabilmente non serve se appartiene ad un cluster)
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "245" "ab" "instanceTitle" $title_c $titleValue "245" "ab" $titleType "" "Istance Title" $partNumber "245" "n" $partTitle "245" "p" $titleVariationDate "245" "f")
+
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "0" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Portion of title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "1" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Parallel Title Proper")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "2" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Distintive title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "3" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Other title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "4" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Cover title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "5" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Added title page title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "6" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Caption title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "7" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Running title")
+#triples_blank_indicators($root $manifestation_s $instanceTitle "246" "a" "8" "instanceTitle" $title_c $titleValue "246" "a" $titleType "" "Spine title")
+
 
 
 #triplesWithBlankNode($root $manifestation_s $instanceTitle "247" "a" "instanceTitle" $title_c $titleValue "247" "a" $titleType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partTitle "247" "p" $titleVariationDate "247" "f" $titleVariation "247" "ab")

@@ -349,4 +349,13 @@ public class Function {
 		return text.replaceAll(":", ": ").replaceAll(",", ", ").replaceAll(Pattern.quote((String)"("), Pattern.quote((String)" ("));
 	
 	}
+	
+	public String filterString (String text, String filter){
+		String [] filters = filter.split("-");
+		return text.substring(Integer.parseInt(filters[0])-1, Integer.parseInt(filters[1])-1);
+	}
+	
+	public String brutalEscape (final String text){
+		return text.replaceAll( "\"", "");
+	}
 }

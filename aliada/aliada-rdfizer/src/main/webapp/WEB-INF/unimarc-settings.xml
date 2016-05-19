@@ -10,7 +10,7 @@
 		<constructor-arg>
 	      	<list>
       	        <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
-					<constructor-arg value="590()9" />
+					<constructor-arg value="500()9" />
 				</bean>	
 				<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
 					<constructor-arg value="454()9" />
@@ -69,14 +69,11 @@
 					<constructor-arg>
 	      				<list>
 							<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
-								<constructor-arg value="100()0" />
+								<constructor-arg value="700()0" />
 							</bean>	
 							<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
-								<constructor-arg value="110()0" />
-							</bean>		
-							<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
-								<constructor-arg value="111()0" />
-							</bean>					
+								<constructor-arg value="701()0" />
+							</bean>						
 						</list>
 					</constructor-arg>
 				</bean>			

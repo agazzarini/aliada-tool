@@ -1,9 +1,9 @@
 #macro (bf $v)<http://bibframe.org/vocab/$v>#end 
 		
-		
 
 #set($manifestation_s = "#uri('Instance' $frbr.manifestationID)") 
 #set($is_a = "#rdf('type')")
+#set($work_c = "#bf('Work')") 
 #set($local = "#bf('local')")
 #set($identifier_c = "#bf('Identifier')")
 #set($identifierAssigner = "#bf('identifierAssigner')")
@@ -35,6 +35,8 @@
 #set($dissertationIdentifier = "#bf('dissertationIdentifier')")
 #set($classification = "#bf('classification')")
 #set($classification_c = "#bf('Classification')")
+#set($classificationNumber = "#bf('classificationNumber')")
+#set($classificationDdc = "#bf('classificationDdc')")
 #set($classificationEdition = "#bf('classificationEdition')")
 #set($classificationScheme = "#bf('classificationScheme')")
 #set($label = "#bf('label')")
@@ -77,55 +79,14 @@
 #set($dissertationYear = "#bf('dissertationYear')")
 #set($languageNote = "#bf('languageNote')")
 #set($dissertationIdentifier = "#bf('dissertationIdentifier')")
+#set($originDate = "#bf('originDate')")
 #set($temporalCoverageNote = "#bf('temporalCoverageNote')")
-#set($findingAidNote = "#bf('findingAidNote')")
 #set($event = "#bf('event')")
 #set($event_c = "#bf('Event')")
 #set($eventDate = "#bf('eventDate')")
-#set($eventPlace = "#bf('eventPlace')")
-#set($mediaCategory = "#bf('mediaCategory')")
-#set($carrierCategory = "#bf('carrierCategory')")
 #set($genre = "#bf('genre')")
-#set($keyTitle = "#bf('keyTitle')")
-#set($abbreviatedTitle = "#bf('abbreviatedTitle')")
-#set($titleVariation = "#bf('titleVariation')")
-#set($titleQualifier = "#bf('titleQualifier')")
-#set($musicNumber = "#bf('musicNumber')")
-#set($musicVersion = "#bf('musicVersion')")
-#set($musicMediumNote = "#bf('musicMediumNote')")
-#set($legalDate = "#bf('legalDate')")
-#set($dimensions = "#bf('dimensions')")
-#set($edition = "#bf('edition')")
-#set($editionResponsibility = "#bf('editionResponsibility')")
-#set($extent = "#bf('extent')")
-#set($frequency = "#bf('frequency')")
-#set($responsibilityStatement = "#bf('responsibilityStatement')")
-#set($serialFirstIssue = "#bf('serialFirstIssue')")
-#set($serialLastIssue = "#bf('serialLastIssue')")
-#set($format = "#bf('format')")
-#set($providerStatement = "#bf('providerStatement')")
-#set($frequencyNote = "#bf('frequencyNote')")
-#set($awardNote = "#bf('awardNote')")
-#set($custodialHistory = "#bf('custodialHistory')")
-#set($illustrationNote = "#bf('illustrationNote')")
-#set($notation = "#bf('notation')")
-#set($preferredCitation = "#bf('preferredCitation')")
-#set($supplementaryContentNote = "#bf('supplementaryContentNote')")
-#set($graphicScaleNote = "#bf('graphicScaleNote')")
-#set($aspectRatio = "#bf('aspectRatio')")
-#set($duration = "#bf('duration')")
-#set($creditsNote = "#bf('creditsNote')")
-#set($immediateAcquisition = "#bf('immediateAcquisition')")
-#set($performerNote = "#bf('performerNote')")
 #set($language_c = "#bf('Language')")
 #set($language = "#bf('language')")
-#set($languageSource = "#bf('languageSource')")
-#set($arrangement = "#bf('arrangement')")
-#set($arrangement_c = "#bf('Arrangement')")
-#set($materialOrganization = "#bf('materialOrganization')")
-#set($materialArrangement = "#bf('materialArrangement')")
-#set($materialHierarchicalLevel = "#bf('materialHierarchicalLevel')")
-#set($materialPart = "#bf('materialPart')")
 #set($cartography = "#bf('cartography')")
 #set($cartography_c = "#bf('Cartography')")
 #set($cartographicAscensionAndDeclination = "#bf('cartographicAscensionAndDeclination')")
@@ -137,13 +98,15 @@
 #set($cartographicScale = "#bf('cartographicScale')")
 #set($titleVariation = "#bf('titleVariation')")
 #set($titleAttribute = "#bf('titleAttribute')")
+#set($musicNumber = "#bf('musicNumber')")
 #set($musicKey = "#bf('musicKey')")
-#set($formatOfMusic = "#bf('formatOfMusic')")
+#set($musicVersion = "#bf('musicVersion')")
 #set($musicMediumNote = "#bf('musicMediumNote')")
 #set($systemNumber = "#bf('systemNumber')")
 #set($uri = "#bf('uri')")
 #set($note = "#bf('note')")
 #set($creditsNote = "#bf('creditsNote')")
+#set($performerNote = "#bf('performerNote')")
 #set($immediateAcquisition = "#bf('immediateAcquisition')")
 #set($heldItem = "#bf('heldItem')")
 #set($heldItem_c = "#bf('HeldItem')")
@@ -160,38 +123,14 @@
 #set($relator = "#bf('relator')")	
 #set($classificationNumber = "#bf('classificationNumber')")
 #set($descriptionAuthentication = "#bf('descriptionAuthentication')")
-#set($categorySource = "#bf('categorySource')")
-#set($lccn = "#bf('lccn')")
-#set($isbn = "#bf('isbn')")
-#set($isbn10 = "#bf('isbn10')")
-#set($isbn13 = "#bf('isbn13')")
-#set($shelfMarkLcc = "#bf('shelfMarkLcc')")
-#set($work_c = "#bf('Work')")
-
-
+#set($categorySource = "#bf('categorySource')")		
 		
-
-## per mappare le opere collegata (es. supersedes, serie, relatedTo, ecc.)			
-#macro(work_related $s $tag $subfield $record $type $kind $predicate) 
-	#set($tagValues = $xpath.many("datafield[@tag='$tag']", $record))
-	#foreach($tagValue in $tagValues) 
-		#set($value = $xpath.combine($tagValue, "$subfield"))
-		#if($function.isNotNullAndNotEmpty($value)) 
-    		#set($text = $function.escape($function.clean($value)))
-        	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
-        	$s1 $is_a $kind .         			
-        	$s1 $label "$text" . 
-        	$s $predicate $s1 . 
-		#end	
-	#end	
-#end	
-
-
+		
 ##mappa la relazione tra un nodo ed una tripla complessa, contenent un attributo
 #macro(oneValue $s $firstValue $type $kind $predicate $label1) 	
 	#if($function.isNotNullAndNotEmpty($firstValue)) 		
 		#set($text = $function.escape($firstValue))
-    	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
+    	#set($s1 = "#uri_with_strong_normalization(${type} ${text}																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	)")
     	$s1 $is_a $kind .         			
     	$s1 $label1 "$text" . 
     	$s $predicate $s1 . 			
@@ -240,6 +179,42 @@
 		
 #end	
 
+
+##per ora legge solo il secondo indicatore
+#macro(triples_blank_indicators $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $indicator2 $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode'| @ind2='$indicator2']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+		#end
+	#end
+#end
 
 
 #macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
@@ -310,8 +285,6 @@
 	#end
 #end
 
-
-
 #macro(oneTriple $root $soggetto $tag $field $predicate)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
 	#foreach($_tag in $_tags)		
@@ -322,17 +295,6 @@
 	#end
 #end
 
-
-#macro(oneTripleCleaned $root $soggetto $tag $field $predicate)
-	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
-	#foreach($_tag in $_tags)		
-        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))		
-		#if($function.isNotNullAndNotEmpty($fieldValue))		
-			#set($fieldValue = $function.fixPunctuatorMarc21($fieldValue))
-			$soggetto $predicate "$fieldValue" .			
-		#end
-	#end
-#end
 
 #macro(oneTripleWithUri $root $soggetto $tag $field $predicate $uri)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
@@ -352,7 +314,7 @@
 #macro(oneTripleInner $soggetto $predicate $_tag $field $tagDiscrimine)
 	#if($predicate)
 		#if($function.isNotNullAndNotEmpty($tagDiscrimine))	
-			#set($fieldValue = $xpath.combine($_tag, "$field"))	
+			#set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))	
 			#if($function.isNotNullAndNotEmpty($fieldValue))
 				$s1 $predicate "$fieldValue" .
 			#end
@@ -366,113 +328,98 @@
 #end
 
 
-
-#macro(setAuthorizedAccessPoint $root $cluster_uri)
-	
-    ######## primo addendo #########
-    #set($_100s = $xpath.many("datafield[@tag='100']", $root))		
-	#set($_v100 = "")
-	#foreach($_100 in $_100s)		
-		#set($_v100temp = $function.escape($xpath.combine($_100, "abcdjq")))
-		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
-		#if(!$function.isNotNullAndNotEmpty($_v100))
-			#set($_v100 = "${_v100}${_v100temp}")
+## filter is type "4-7" make a substring of 4th - 7th position
+#macro(oneTripleInnerFilter $soggetto $predicate $_tag $field $tagDiscrimine $filter)
+	#if($predicate)
+		#if($function.isNotNullAndNotEmpty($tagDiscrimine))
+			#set($fieldValue = $xpath.combine($_tag, "$field"))
+			#if($function.isNotNullAndNotEmpty($fieldValue) && 
+					!$fieldValue.contains("---"))
+				#set($fieldValue = "$function.filterString($fieldValue, $filter)")
+				$s1 $predicate "$fieldValue" .
+			#end
 		#else
-			#set($_v100 = "${_v100}  ${_v100temp}")
+			#if($function.isNotNullAndNotEmpty($field))
+    			## allora in field non ho un sottocampo, ma un campo testuale statico
+    			$s1 $predicate "$field" .
+			#end
 		#end
-	#end	
-   
-    #set($_110s = $xpath.many("datafield[@tag='110']", $root))
-	#set($_v110 = "")
-	#foreach($_110 in $_110s)		
-		#set($_v110temp = $function.escape($xpath.combine($_110, "abc")))	
-		#if(!$function.isNotNullAndNotEmpty($_v110))
-			#set($_v110 = "${_v110}${_v110temp}")
+	#end		
+#end
+
+
+
+
+
+#macro(setAuthorizedAccessPoint $root $cluster_uri $title)
+	#set($_700s = $xpath.many("datafield[@tag='700']",$root))	
+	#foreach($_700 in $_700s)			
+		#set($_v700 = $function.escape($xpath.combine($_700, "abcdfg")))		
+	#end
+    #set($_701s = $xpath.many("datafield[@tag='701']", $root))		
+	#set($_v701 = "")
+	#foreach($_701 in $_701s)		
+		#set($_v701temp = $function.escape($xpath.combine($_701, "abcdfg")))
+		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
+		#if(!$function.isNotNullAndNotEmpty($_v701))
+			#set($_v701 = "${_v701}${_v701temp}")
 		#else
-			#set($_v110 = "${_v110}  ${_v110temp}")
+			#set($_v701 = "${_v701}  ${_v701temp}")
 		#end
 	#end
-  	     
-	    #set($_111s = $xpath.many("datafield[@tag='111']", $root))
-	#set($_v111 = "")
-	#foreach($_111 in $_111s)		
-		#set($_v111temp = $function.escape($xpath.combine($_111, "acdeq")))	
-		#if(!$function.isNotNullAndNotEmpty($_v111))
-			#set($_v111 = "${_v111}${_v111temp}")
+    #set($_710s = $xpath.many("datafield[@tag='710']", $root))	
+	#foreach($_710 in $_710s)
+		#set($_v710 = $function.escape($xpath.combine($_710, "abe")))	
+	#end
+    #set($_711s = $xpath.many("datafield[@tag='711']", $root))
+	#set($_v711 = "")
+	#foreach($_711 in $_711s)		
+		#set($_v711temp = $function.escape($xpath.combine($_711, "abe")))	
+		#if(!$function.isNotNullAndNotEmpty($_v711))
+			#set($_v711 = "${_v711}${_v711temp}")
 		#else
-			#set($_v111 = "${_v111}  ${_v111temp}")
+			#set($_v711 = "${_v711}  ${_v711temp}")
 		#end
-	#end	
+	#end
+    #set($_720s = $xpath.many("datafield[@tag='720']", $root))
+	#foreach($_720 in $_720s)
+		#set($_v720 = $function.escape($xpath.combine($_720, "a")))	
+	#end
+    #set($_721s = $xpath.many("datafield[@tag='721']", $root))
+	#set($_v721 = "")
+	#foreach($_721 in $_721s)		
+		#set($_v721temp = $function.escape($xpath.combine($_721, "a")))
+		#if(!$function.isNotNullAndNotEmpty($_v721))
+			#set($_v721 = "${_v721}${_v721temp}")
+		#else
+			#set($_v721 = "${_v721}  ${_v721temp}")
+		#end
+	#end
+	     
+	
 	## setto il primo addendo della somma del mapping
           
-	#if($function.isNotNullAndNotEmpty($_v100)) 
-		#set($firstAddend = $_v100)
-	#elseif($function.isNotNullAndNotEmpty($_v110))	
-		#set($firstAddend = $_v110)
-	#elseif( $function.isNotNullAndNotEmpty($_v111))
-		#set($firstAddend = $_v111)	
-	#else 
-		#set($firstAddend = "")	
+	#if($function.isNotNullAndNotEmpty($_v700)) 
+		#set($firstAddend = $_v700)
+	#elseif($function.isNotNullAndNotEmpty($_v701))	
+		#set($firstAddend = $_v701)
+	#elseif($function.isNotNullAndNotEmpty($_v710))
+		#set($firstAddend = $_v710)
+	#elseif( $function.isNotNullAndNotEmpty($_v711))
+		#set($firstAddend = $_v711)
+	#elseif( $function.isNotNullAndNotEmpty($_v720))
+		#set($firstAddend = $_v720)
+	#else
+		#set($firstAddend = $_v721)		
 	#end	
-	 ######## fine primo addendo ###########################################
-	 
-	 ######### secondo addendo #############################################
-	#set($_240s = $xpath.many("datafield[@tag='240']", $root))		
-	#set($_v240 = "")
-	#foreach($_240 in $_240s)		
-		#set($_v240temp = $function.escape($xpath.combine($_240, "adfgklmnopqrs")))
-		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
-		#if(!$function.isNotNullAndNotEmpty($_v240))
-			#set($_v240 = "${_v240}${_v240temp}")
-		#else
-			#set($_v240 = "${_v240}  ${_v240temp}")
-		#end
-	#end
+		
 	
-	#set($_245s = $xpath.many("datafield[@tag='245']", $root))		
-	#set($_v245 = "")
-	#foreach($_245 in $_245s)		
-		#set($_v245temp = $function.escape($xpath.combine($_245, "afgknps")))
-		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
-		#if(!$function.isNotNullAndNotEmpty($_v245))			
-			#set($_v245 = "${_v245}${_v245temp}")		
-		#else
-			#set($_v245 = "${_v245}  ${_v245temp}")		
-		#end
-	#end
-	
-	#set($_130s = $xpath.many("datafield[@tag='130']", $root))		
-	#set($_v130 = "")
-	#foreach($_130 in $_130s)		
-		#set($_v130temp = $function.escape($xpath.combine($_130, "adfgklmnoprs")))
-		##se sono al primo giro e non voglio avere troppi spazi all'inizio della stringa
-		#if(!$function.isNotNullAndNotEmpty($_v130))
-			#set($_v130 = "${_v130}${_v130temp}")
-		#else
-			#set($_v130 = "${_v130}  ${_v130temp}")
-		#end
-	#end
-	## setto il secondo addendo della somma del mapping
-	#if($function.isNotNullAndNotEmpty($_v240)) 
-		#set($secondAddend = $_v240)
-	#elseif($function.isNotNullAndNotEmpty($_v245))	
-		#set($secondAddend = $function.removePunct($_v245))
-	#elseif( $function.isNotNullAndNotEmpty($_v130))
-		#set($secondAddend = $_v130)	
-	#end	
-	
-	#set($space = "")
-	#if($function.isNotNullAndNotEmpty($secondAddend) && $function.isNotNullAndNotEmpty($firstAddend)) 		
-		#set($space = " ")
-	#end
-	 ###########fine secondo addendo############
-	$cluster_uri $authorizedAccessPoint "$firstAddend$space$secondAddend" .
+	$cluster_uri $authorizedAccessPoint "$firstAddend. $function.escape($title)" .
 #end
 	
 
 
-
-############## fine macro ####################
+######### fine macro #######################
 
 
 #set($people = $frbr.personIDs)
@@ -498,7 +445,8 @@
 					$cluster_uri $authorizedAccessPoint "$text" . 
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .
-					$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . ##versione alternativa per viaf in bibframe
+					$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . 
+					##versione alternativa per viaf in bibframe
 					## le teniamo entrambe per completezza
 					#set($firstTimeViaf = false)
 				#else
@@ -526,24 +474,10 @@
 			
 			#set($firstTimeViaf = true)
 			#foreach($cluster_entry in $cluster.entries)
-				#if($cluster_entry.preferred)
+				#if($cluster_entry.preferred)					
 					#threeValue($cluster_uri $cluster_entry.heading "workTitle" $title_c $workTitle $titleValue $titleType "Preferred Title" $subtitle "") 
 					
-					##titleAttribute
-					#set($titleNode = "#uri_with_strong_normalization('workTitle' ${function.escape($cluster_entry.heading)})")
-					#set($_130s = $xpath.many("datafield[@tag='130']",$root))
-					#foreach($_130 in $_130s)
-						#set($v = $xpath.combine($_130, "g"))						
-						$titleNode $titleAttribute $values
-					#end
-					#set($_240s = $xpath.many("datafield[@tag='240']",$root))
-					#foreach($_240 in $_240s)
-						#set($values = $xpath.combine($_240, "g"))
-						#if(!$function.isNotNullAndNotEmpty($values))
-							$titleNode $titleAttribute $values .
-						#end
-					#end
-					##								
+					#setAuthorizedAccessPoint($root $cluster_uri $cluster_entry.heading)
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> . 
 					#set($firstTimeViaf = false)
@@ -560,275 +494,154 @@
 		$s1 $identifierScheme <http://share-cat/identifiers/works/Local> .
 		$s1 $identifierValue "$cluster.id" .
 		$cluster_uri $local $s1 .
-					
-       
+		 
+		##				
+		#set($v = $xpath.combine($tag, "k"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $originDate "$text" .
+		##
+		#end
+		
+		##legalDate				
+		#set($v = $xpath.combine($tag, "k"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $legalDate "$text" .
+		##		
+		#end
+		##
+		
+		#set($v = $xpath.combine($tag, "s"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicNumber "$text" .
+		##
+		#end
+		
+		#set($v = $xpath.combine($tag, "u"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicKey "$text" .
+		##
+		#end
+		
+			
+		#set($v = $xpath.combine($tag, "q"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicVersion "$text" .
+		##
+		#end
+		
+			#set($v = $xpath.combine($tag, "r"))
+		#if($function.isNotNullAndNotEmpty($v)) 
+			#set($text = $function.escape($v))
+			$cluster_uri $musicMediumNote "$text" .
+		##
+		#end
+		
+		##titleAttribute
+		#set($titleNode = "#uri_with_strong_normalization('workTitle' ${function.escape($cluster_entry.heading)})")
+		#set($values = $xpath.combine($tag, "bjklmnqrsuvwxyz23"))
+		#if($function.isNotNullAndNotEmpty($values))
+			$titleNode $titleAttribute "$values" .			
+		#end
+		##
+		
+        ##contentCategory		
+        #set($s1 = "#uri_with_strong_normalization('contentCategory' ${text})")				
+        $s1 $is_a $category_c .
+        $s1 $categoryType "content category" .
+        $s1 $categoryValue "Text" .
+        $cluster_uri $contentCategory $s1 .
+		##
+		
+		
 	#end 			
 #end  
 
-##All WORK
+
+## ALL WORK
+
 #foreach($w in $frbr.flatWorkIDs)
-	#set($cluster_uri = "#uri_literal('Work' ${w.id})")	
-	
-	#setAuthorizedAccessPoint($root $cluster_uri)	
-	##marc21
-	##content category
-	
-	#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $categoryValue '336' 'a' $categoryValue '336' 'b' $categorySource '336' '2')
-	#triplesWithBlankNode($root $cluster_uri $contentCategory '337' 'a' 'Category' $category_c $categoryValue '337' 'a' $categoryValue '337' 'b' $categorySource '337' '2')
-	#triplesWithBlankNode($root $cluster_uri $contentCategory '338' 'a' 'Category' $category_c $categoryValue '338' 'a' $categoryValue '338' 'b' $categorySource '338' '2')
+	#set($cluster_uri = "#uri_literal('Work' ${w.id})")
 	
 	
-	#set($triple = "")
-	#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $contentType '336' 'a' $categorySource '336' '2')")
-	#if(!$triple || $triple == "")
-		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '337' 'b' 'Category' $category_c $contentType '337' 'b' $categorySource '337' '2')")
-	#end
-	#if(!$triple || $triple == "")
-		#set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '345' 'k' 'Category' $category_c $contentType '345' 'k')")
-	#end
-	$triple
+	
+	##
+	#oneTriple($root $cluster_uri "328" "a" $dissertationNote)
+	##
+	#oneTriple($root $cluster_uri "607" "a" $geographicCoverageNote)
+	##
+	#triplesWithBlankNode($root $cluster_uri $workTitle "501" "a" "workTitle" $title_c $titleValue "501" "a" $titleType "" "collective title")
+	##	
+	#triplesWithBlankNode($root $cluster_uri $issnL "011" "a" "issnL" $identifier_c $identifierValue "011" "a" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
 	
 	
-	#oneTriple($root $cluster_uri "502" "ag" $dissertationNote)
-	#oneTriple($root $cluster_uri "502" "b" $dissertationDegree)
-	#oneTriple($root $cluster_uri "502" "c" $dissertationInstitution)	
-	#oneTriple($root $cluster_uri "502" "d" $dissertationYear)
-	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
-	#triplesWithBlankNode($root $cluster_uri $dissertationIdentifier "502" "o" "issnL" $identifier_c $identifierValue "502" "o")
+	##generic identifier
+	#triplesWithBlankNode($root $cluster_uri $local "010" "a" "identifier" $identifier_c $identifierValue "010" "a" $identifierAssigner "010" "b" $identifierQualifier "010" "b")
+	#triplesWithBlankNode($root $cluster_uri $local "012" "a" "identifier" $identifier_c $identifierValue "012" "a" $identifierAssigner "012" "5")
+	#triplesWithBlankNode($root $cluster_uri $local "013" "a" "identifier" $identifier_c $identifierValue "013" "a" $identifierAssigner "013" "b" $identifierQualifier "013" "b")
+	#triplesWithBlankNode($root $cluster_uri $local "015" "a" "identifier" $identifier_c $identifierValue "015" "a" $identifierAssigner "015" "b" $identifierQualifier "015" "b")
+	#triplesWithBlankNode($root $cluster_uri $local "016" "a" "identifier" $identifier_c $identifierValue "016" "a" $identifierAssigner "016" "b" $identifierQualifier "016" "b")
+	#triplesWithBlankNode($root $cluster_uri $systemNumber "035" "b" "identifier" $identifier_c $identifierValue "035" "a" $identifierAssigner "035" "a")
+	#triplesWithBlankNode($root $cluster_uri $local "020" "a" "identifier" $identifier_c $identifierValue "020" "b" $identifierAssigner "020" "b" $identifierStatus "020" "abz")
 	
-	##identificativi generici
-	#triplesWithBlankNode($root $cluster_uri $lccn "010" "ab" "identifier" $identifier_c $identifierValue "010" "ab" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/lccn>")
-	#triplesWithBlankNode($root $cluster_uri $local "015" "a" "identifier" $identifier_c $identifierValue "015" "a" $identifierAssigner "015" "2" $identifierQualifier "015" "q" $identifierStatus "015" "z")
-	#triplesWithBlankNode($root $cluster_uri $local "016" "a" "identifier" $identifier_c $identifierValue "016" "a" $identifierAssigner "016" "2" $identifierStatus "016" "z")
-	#triplesWithBlankNode($root $cluster_uri $local "022" "almy" "identifier" $identifier_c $identifierValue "022" "almy" $identifierAssigner "022" "2")
-	#triplesWithBlankNode($root $cluster_uri $local "028" "a" "identifier" $identifier_c $identifierValue "028" "a" $identifierAssigner "028" "b" $identifierQualifier "028" "q")
-	#triplesWithBlankNode($root $cluster_uri $local "032" "b" "identifier" $identifier_c $identifierAssigner "032" "b")
-	#triplesWithBlankNode($root $cluster_uri $local "017" "a" "identifier" $identifier_c $identifierValue "017" "a" $identifierAssigner "017" "b" $identifierStatus "017" "z")
-	#triplesWithBlankNode($root $cluster_uri $local "036" "a" "identifier" $identifier_c $identifierValue "036" "a" $identifierAssigner "036" "b")
-	#triplesWithBlankNode($root $cluster_uri $local "037" "a" "identifier" $identifier_c $identifierValue "037" "a" $identifierAssigner "037" "b" $identifierQualifier "037" "cfg")
+	#triplesWithBlankNode($root $cluster_uri $classification "686" "a" "classification" $classification_c $classificationNumber "686" "a")
+	#triplesWithBlankNode($root $cluster_uri $classification "022" "b" "classification" $classification_c $classificationNumber "022" "b")
+
+	#triplesWithBlankNode($root $cluster_uri $classificationUdc "675" "a" "udc" $classification_c $classificationNumber "675" "a" $classificationScheme "" "classificationUdc")
+	#triplesWithBlankNode($root $cluster_uri $classificationDdc "676" "a" "ddc" $classification_c $classificationNumber "676" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
 	
-	## isbn
-	#set($_020s = $xpath.many("datafield[@tag='020']",$root))
-	#foreach($_020 in $_020s)			
-        #set($fieldValue = $function.escape($xpath.combine($_020, "a")))			
-		#if($function.isNotNullAndNotEmpty($fieldValue))
-			#set($substring = $fieldValue)
-			#if($fieldValue.indexOf(' ') > 0)
-				#set($substring = $fieldValue.substring(0, $fieldValue.indexOf(' ')))
-			#end		
-			#if($substring.length() == 10)				
-				#triplesWithBlankOne($root $cluster_uri $isbn10 $_020 "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")				
-			#elseif ($substring.length() == 13)				
-				#triplesWithBlankOne($root $cluster_uri $isbn13 $_020 "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
-			#else				
-				#triplesWithBlankOne($root $cluster_uri $isbn $_020 "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")	
-			#end
+	#oneTripleWithUri($root $cluster_uri "680" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
+	#oneTripleWithUri($root $cluster_uri "686" "a" $classificationNlm "<http://nlm.example.org/classification")
+
+	##
+	##genre selezione posizione 4-7
+	#set ($_tags = $xpath.many("datafield[@tag='105']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "a"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization('genre'${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$cluster_uri $genre $s1 .
+			##definisco il blank node
+			$s1 $is_a $category_c . 
+			##popolo il blank node
+			
+			#oneTripleInnerFilter($s1 $categoryValue $_tag "a" "105" "4-7")				
+						
 		#end
 	#end
 	
 	
-	##triplesWithBlankNode($root $cluster_uri $isbn "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
-	##triplesWithBlankNode($root $cluster_uri $isbn10 "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
-	##triplesWithBlankNode($root $cluster_uri $isbn13 "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
-	#triplesWithBlankNode($root $cluster_uri $local "027" "a" "identifier" $identifier_c $identifierValue "027" "a" $identifierQualifier "027" "q" )
-	#triplesWithBlankNode($root $cluster_uri $local "024" "a" "identifier" $identifier_c $identifierValue "024" "a" $identifierQualifier "024" "cq" $identifierStatus "024" "z")
-	#triplesWithBlankNode($root $cluster_uri $systemNumber "035" "a" "identifier" $identifier_c $identifierValue "036" "a") 
 	
-	##originDate
-	#set($triple1 = "")
-	#set($triple1 = "#oneTriple($root $cluster_uri '130' 'd' $originDate)")
-	#if(!$triple1 || $triple1 == "")
-		#set($triple1 = "#oneTriple($root $cluster_uri '130' 'f' $originDate)")
-	#end
-	$triple1
-	
-	##originDate
-	#set($triple2 = "")
-	#set($triple2 = "#oneTriple($root $cluster_uri '730' 'd' $originDate)")
-	#if(!$triple2 || $triple2 == "")
-		#set($triple2 = "#oneTriple($root $cluster_uri '730' 'f' $originDate)")
-	#end
-	$triple2
-	
-	#if(!$triple1 && !$triple2 && $triple2 == "" && $triple1 == "")
-		#oneTriple($root $cluster_uri "046" "kl" $originDate)
-	#end
-	
-	
-	##legalDate
-	#set($triple1 = "")
-	#set($triple1 = "#oneTriple($root $cluster_uri '130' 'd' $legalDate)")
-	#if(!$triple1 || $triple1 == "")
-		#set($triple1 = "#oneTriple($root $cluster_uri '130' 'f' $legalDate)")
-	#end
-	$triple1
-	
-	##legalDate
-	#set($triple2 = "")
-	#set($triple2 = "#oneTriple($root $cluster_uri '730' 'd' $legalDate)")
-	#if(!$triple2 || $triple2 == "")
-		#set($triple2 = "#oneTriple($root $cluster_uri '730' 'f' $legalDate)")
-	#end
-	$triple2
-	
-	#if(!$triple1 && !$triple2 && $triple2 == "" && $triple1 == "")
-		#oneTriple($root $cluster_uri "046" "kl" $legalDate)
-	#end
-	
-	##geographicCoverageNote
-	##va generata una tripla per ciascuno (niente or)
-	#oneTriple($root $cluster_uri "522" "a" $geographicCoverageNote)
-	#oneTriple($root $cluster_uri "651" "a" $geographicCoverageNote)
-	#oneTriple($root $cluster_uri "662" "abcdefg" $geographicCoverageNote)
-	#oneTriple($root $cluster_uri "662" "h" $geographicCoverageNote)
-	##penso vadano in OR le seguenti condizioni
-	##temporalCoverageNote
-	#oneTriple($root $cluster_uri "513" "b" $temporalCoverageNote)
-	#oneTriple($root $cluster_uri "648" "a" $temporalCoverageNote)	
-	#oneTriple($root $cluster_uri "533" "m" $temporalCoverageNote)
-	
-	##event	
-	#triplesWithBlankNode($root $cluster_uri $event "518" "ao" "Event" $event_c $label "518" "ao" $eventDate "518" "d" $ventPlace "518" "p")
-	#triplesWithBlankNode($root $cluster_uri $event "033" "ao" "Event" $event_c $label "033" "a"  $eventDate "033" "a" $ventPlace "033" "p"  $ventPlace "033" "bc")
-	
-	##penso vadano in OR le seguenti condizioni
-	
-	#triplesWithBlankNode($root $cluster_uri $classification "084" "a" "classification" $classification_c $classificationNumber "084" "a"  $label "084" "a" $classificationScheme "084" "2")
-	
-	
-	##classification ddc
 
-	#triplesWithBlankNode($root $cluster_uri $classificationDdc "082" "a" "ddc" $classification_c $classificationNumber "082" "a"  $label "082" "a" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
-	#triplesWithBlankNode($root $cluster_uri $classificationDdc "083" "ac" "ddc" $classification_c $classificationNumber "083" "ac" $label "083" "ac" $classificationScheme "" "<http://id.loc.gov/authorities/classSchemes/ddc>")
-
-	
-	##penso vadano in OR le seguenti condizioni
-	##classification Llc
-	#oneTripleWithUri($root $cluster_uri "050" "a" $classificationLcc "<http://id.loc.gov/authorities/classification/")
-	#oneTripleWithUri($root $cluster_uri "055" "a" $classificationLcc "<http://id.loc.gov/authorities/classification/")
-	#oneTripleWithUri($root $cluster_uri "052" "ab" $classificationLcc "<http://id.loc.gov/authorities/classification/")
-	
-	
-	##classification udc
-	#triplesWithBlankNode($root $cluster_uri $classificationUdc "080" "a" "udc" $classification_c $classificationNumber "080" "a" $classificationScheme "" "classificationUdc")
-	
-	##classification Nlm
-	#oneTripleWithUri($root $cluster_uri "060" "a" $classificationNlm "<http://nlm.example.org/classification/")
-
-	#oneTripleWithUri($root $cluster_uri "042" "a" $descriptionAuthentication "<http://id.loc.gov/vocabulary/descriptionAuthentication/")
-	
-	##classification isnnL
-	#triplesWithBlankNode($root $cluster_uri $issnL "022" "m" "issnL" $identifier_c $identifierValue "022" "m" $identifierScheme "" "<http://id.loc.gov/vocabulary/identifiers/issnL>")
-	
-	##genre
-	## dovrebbe prendere 008/24-27 posizionale
-	##dovrebbero essere in OR ?
-	#triplesWithBlankNode($root $cluster_uri $genre "008" "24-27?" "genre" $category_c $categoryValue "008" "24-27?")
-	#triplesWithBlankNode($root $cluster_uri $genre "655" "a" "genre" $category_c $categoryValue "665" "a")
-	#triplesWithBlankNode($root $cluster_uri $genre "513" "a" "genre" $category_c $categoryValue "513" "a")
-	#triplesWithBlankNode($root $cluster_uri $genre "516" "a" "genre" $category_c $categoryValue "516" "a")
-	
-	#oneTriple($root $cluster_uri "130" "n" $musicNumber)
-	#oneTriple($root $cluster_uri "240" "n" $musicNumber)
-	#oneTriple($root $cluster_uri "130" "r" $musicKey)
-	#oneTriple($root $cluster_uri "240" "r" $musicKey)
-	#oneTriple($root $cluster_uri "130" "o" $musicVersion)
-	#oneTriple($root $cluster_uri "240" "o" $musicVersion)
-	#oneTriple($root $cluster_uri "382" "adp" $musicMediumNote)
-	#oneTriple($root $cluster_uri "240" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "243" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "700" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "710" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "711" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "730" "m" $musicMediumNote)
-	
-	#oneTriple($root $cluster_uri "130" "d" $legalDate)
-	#oneTriple($root $cluster_uri "730" "d" $legalDate)
-	#oneTriple($root $cluster_uri "130" "f" $legalDate)
-	#oneTriple($root $cluster_uri "730" "f" $legalDate)
-	#oneTriple($root $cluster_uri "046" "kl" $legalDate)
-	
-	
-	##creditsNote
-	#oneTriple($root $manifestation_s "508" "a" $creditNote)
-	
-	##immediateAcquisition
-	#oneTriple($root $manifestation_s "541" "3abcdfhno" $immediateAcquisition)
-	
-	##performerNote
-	#oneTriple($root $manifestation_s "511" "a" $performerNote)
-	
-	##findingAidNote
-	#oneTriple($root $manifestation_s "555" "3abc" $findingAidNote)
-	
 	##cartography
-	#triplesWithBlankNode($root $cluster_uri $cartography "255" "d" "cartography" $cartography_c $cartographicAscensionAndDeclination "255" "d" $cartographicCoordinates "255" "c" $cartographicEquinox "255" "e" $cartographicExclusionGRing "255" "g" $cartographicOuterGRing "255" "f" $cartographicProjection "255" "b" $cartographicScale "255" "a" )
+	#triplesWithBlankNode($root $cluster_uri $cartography "206" "e" "cartography" $cartography_c $cartographicAscensionAndDeclination "206" "e" $cartographicCoordinates "206" "d" $cartographicEquinox "206" "f" $cartographicProjection "206" "c" $cartographicScale "206" "b" )
 
-	
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "246" "ab" "titleVariation" $title_c $titleValue "246" "ab")
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "247" "ab" "titleVariation" $title_c $titleValue "247" "ab")
-	#triplesWithBlankNode($root $manifestation_s $titleVariation "242" "ab" "titleVariation" $title_c $titleValue "242" "ab")
-	
-	## le seguenti coppie andranno in or?
-	#oneTriple($root $cluster_uri "130" "n" $musicNumber)
-	#oneTriple($root $cluster_uri "240" "n" $musicNumber)
-	
-	#oneTriple($root $cluster_uri "130" "r" $musicKey)
-	#oneTriple($root $cluster_uri "240" "r" $musicKey)
-	
-	#oneTriple($root $cluster_uri "130" "o" $musicVersion)
-	#oneTriple($root $cluster_uri "240" "o" $musicVersion)
-	
-	#oneTriple($root $cluster_uri "382" "adp" $musicMediumNote)
-	#oneTriple($root $cluster_uri "240" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "243" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "700" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "710" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "711" "m" $musicMediumNote)
-	#oneTriple($root $cluster_uri "730" "m" $musicMediumNote)
-	
-	##contributor
-	
-	#set($_700s = $xpath.many("datafield[@tag='700']",$root))	
-	#foreach($_700 in $_700s)			
-		#set($_700_4 = $function.escape($xpath.combine($_700, "4")))
-		#if(!$function.isNotNullAndNotEmpty($_700_4))
-			#triplesWithBlankNode($root $cluster_uri $contributor "700" "a" "contributor" $agent_c $label "700" "a")
-		#else
-			#triplesWithBlankNode($root $cluster_uri $relator "700" "a" "relator" $relator_c $label "700" "a")
-		#end	
-	#end
-	
-	#set($_710s = $xpath.many("datafield[@tag='710']",$root))	
-	#foreach($_710 in $_710s)			
-		#set($_710_4 = $function.escape($xpath.combine($_710, "4")))
-		#if(!$function.isNotNullAndNotEmpty($_710_4))
-			#triplesWithBlankNode($root $cluster_uri $contributor "710" "a" "contributor" $agent_c $label "710" "a")
-		#else
-			#triplesWithBlankNode($root $cluster_uri $relator "710" "a" "relator" $relator_c $label "710" "a")
-		#end	
-	#end
-	
-	#set($_711s = $xpath.many("datafield[@tag='711']",$root))	
-	#foreach($_711 in $_711s)			
-		#set($_711_4 = $function.escape($xpath.combine($_711, "4")))
-		#if(!$function.isNotNullAndNotEmpty($_711_4))
-			#triplesWithBlankNode($root $cluster_uri $contributor "711" "a" "contributor" $agent_c $label "711" "a")
-		#else
-			#triplesWithBlankNode($root $cluster_uri $relator "711" "a" "relator" $relator_c $label "711" "a")
-		#end	
-	#end
-	
-	
-	
-	## related work
-	#work_related($cluster_uri "780" "at" $root $relatedWork $work_c $precededBy)
-	#work_related($cluster_uri "785" "at" $root $relatedWork $work_c $succeededBy)
-	#work_related($cluster_uri "777" "at" $root $relatedWork $work_c $issuedWith)
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "510" "ae" "titleVariation" $title_c $titleValue "510" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "512" "ae" "titleVariation" $title_c $titleValue "512" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "513" "ae" "titleVariation" $title_c $titleValue "513" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "514" "ae" "titleVariation" $title_c $titleValue "514" "ae")
+	#triplesWithBlankNode($root $manifestation_s $titleVariation "515" "ae" "titleVariation" $title_c $titleValue "515" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "516" "ae" "titleVariation" $title_c $titleValue "516" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "517" "ae" "titleVariation" $title_c $titleValue "517" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "520" "ae" "titleVariation" $title_c $titleValue "520" "ae")
+    #triplesWithBlankNode($root $manifestation_s $titleVariation "541" "ae" "titleVariation" $title_c $titleValue "541" "ae")
 
-	#work_related($cluster_uri "490" "av" $root $relatedWork $work_c $series)
+	#oneTriple($root $cluster_uri "328" "a" $dissertationDegree)
+	#oneTriple($root $cluster_uri "328" "a" $dissertationInstitution)
+	#oneTriple($root $cluster_uri "328" "a" $dissertationYear)
+	
+	## probabilmente è un doppione
+	###oneTriple($root $cluster_uri "500" "s" $musicNumber)
 	
 #end
+
 
 
 
@@ -846,154 +659,47 @@
 	#set($k = "instanceTitle")
 #end
 
+#triplesWithBlankNode($root $s $p "500" "a" "workTitle" $title_c $titleValue  "500" "a" $titleType "" "Preferred Title") 
+	
+
+
+#triplesWithBlankNode($root $s $p "503" "a" $k $title_c $titleValue "503" "a" $titleType "" "Preferred Conventional Heading" $subtitle "503" "e")
 
 
 ## ISTANCE
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "560" "a" "instanceTitle" $title_c $titleValue "560" "a" $titleType "" "Artifical Title" $subtitle "560" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "545" "a" "instanceTitle" $title_c $titleValue "545" "a" $titleType "" "Section Title" $subtitle "545" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "541" "a" "instanceTitle" $title_c $titleValue "541" "a" $titleType "" "Translated Title Supplied by Cataloguer" $subtitle "541" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "540" "a" "instanceTitle" $title_c $titleValue "540" "a" $titleType "" "Additional Title Supplied by Cataloguer" $subtitle "540" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "532" "a" "instanceTitle" $title_c $titleValue "532" "a" $titleType "" "Expanded Title" $subtitle "532" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "531" "a" "instanceTitle" $title_c $titleValue "531" "a" $titleType "" "Abbreviated Title" $subtitle "531" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "530" "a" "instanceTitle" $title_c $titleValue "530" "a" $titleType "" "Key-Title" $subtitle "530" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "518" "a" "instanceTitle" $title_c $titleValue "518" "a" $titleType "" "Title in Standard Modern Spelling" $subtitle "518" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "517" "a" "instanceTitle" $title_c $titleValue "517" "a" $titleType "" "Other Variant Title" $subtitle "517" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "516" "a" "instanceTitle" $title_c $titleValue "516" "a" $titleType "" "Spine Title" $subtitle "516" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "515" "a" "instanceTitle" $title_c $titleValue "515" "a" $titleType "" "Running Title" $subtitle "515" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "514" "a" "instanceTitle" $title_c $titleValue "514" "a" $titleType "" "Caption Title" $subtitle "514" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "513" "a" "instanceTitle" $title_c $titleValue "513" "a" $titleType "" "Added Title-Page Title" $subtitle "513" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "512" "a" "instanceTitle" $title_c $titleValue "512" "a" $titleType "" "Cover Title" $subtitle "512" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "511" "a" "instanceTitle" $title_c $titleValue "511" "a" $titleType "" "Half Title" $subtitle "511" "e")
+#triplesWithBlankNode($root $manifestation_s $instanceTitle "510" "a" "instanceTitle" $title_c $titleValue "510" "a" $titleType "" "Parallel Title Proper" $subtitle "510" "e")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "510" "ae" "titleVariation" $title_c $titleValue "510" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "512" "ae" "titleVariation" $title_c $titleValue "512" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "513" "ae" "titleVariation" $title_c $titleValue "513" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "514" "ae" "titleVariation" $title_c $titleValue "514" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "515" "ae" "titleVariation" $title_c $titleValue "515" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "516" "ae" "titleVariation" $title_c $titleValue "516" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "517" "ae" "titleVariation" $title_c $titleValue "517" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "520" "ae" "titleVariation" $title_c $titleValue "520" "ae")
+#triplesWithBlankNode($root $manifestation_s $titleVariation "541" "ae" "titleVariation" $title_c $titleValue "541" "ae")
 
-##marc21
-##istance title (che probabilmente non serve se appartiene ad un cluster)
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "245" "ab" "instanceTitle" $title_c $titleValue "245" "ab" $titleType "" "Istance Title" $partNumber "245" "n" $partTitle "245" "p" $titleVariationDate "245" "f")
+#triplesWithBlankNode($root $manifestation_s $language "101" "a" "language" $language_c $label "101" "a")
 
+#oneTriple($root $manifestation_s "012" "5a" $uri)
 
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "247" "a" "instanceTitle" $title_c $titleValue "247" "a" $titleType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partTitle "247" "p" $titleVariationDate "247" "f" $titleVariation "247" "ab")
-#triplesWithBlankNode($root $manifestation_s $instanceTitle "242" "a" "instanceTitle" $title_c $titleValue "242" "a" $titleType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partTitle "242" "p" $titleVariation "242" "ab")
-#oneTriple($root $manifestation_s "546" "3a" $languageNote) 
+#oneTriple($root $manifestation_s "300" "a" $note)
+#oneTriple($root $manifestation_s "322" "a" $creditsNote)
+#oneTriple($root $manifestation_s "323" "a" $performerNote)
 
-#triplesWithBlankNode($root $manifestation_s $keyTitle "222" "a" "keyTitle" $title_c $titleValue "222" "a" $titleType "" "Key Title" $titleQualifier "222" "b")
-#triplesWithBlankNode($root $manifestation_s $abbreviatedTitle "210" "a" "abbreviatedTitle" $title_c $titleValue "210" "a" $titleType "" "Abbreviated Title"  $titleQualifier "210" "b")
-#triplesWithBlankNode($root $manifestation_s $titleVariation "246" "ab" "titleVariation" $title_c $titleValue "246" "ab")
-#triplesWithBlankNode($root $manifestation_s $titleVariation "247" "ab" "titleVariation" $title_c $titleValue "247" "ab")
-#triplesWithBlankNode($root $manifestation_s $titleVariation "242" "ab" "titleVariation" $title_c $titleValue "242" "ab")
+#oneTriple($root $manifestation_s "345" "abcd" $immediateAcquisition)
 
-
-##media category
-#set($triple = "")
-#set($triple = "#oneTriple($root $manifestation_s '337' 'a' $mediaCategory)")
-#if(!$triple || $triple == "")
-	#set($triple = "#oneTriple($root $manifestation_s '337' 'b' $mediaCategory)")
-#end	
-#if(!$triple || $triple == "")
-	#set($triple = "#oneTriple($root $manifestation_s '007' '00' $mediaCategory)")
-#end
-$triple
-	
-
-##carrierCategory
-## forse vanno in OR
-#oneTriple($root $manifestation_s "338" "a" $carrierCategory)
-#oneTriple($root $manifestation_s "300" "f" $carrierCategory)
-#oneTriple($root $manifestation_s "007" "01" $carrierCategory)
-#oneTriple($root $manifestation_s "338" "b" $carrierCategory)
-#oneTriple($root $manifestation_s "533" "a" $carrierCategory)
-#oneTriple($root $manifestation_s "240" "h" $carrierCategory)
-#oneTriple($root $manifestation_s "243" "h" $carrierCategory)
-#oneTriple($root $manifestation_s "130" "h" $carrierCategory)
-#oneTriple($root $manifestation_s "730" "h" $carrierCategory)
-#oneTriple($root $manifestation_s "700" "h" $carrierCategory)
-#oneTriple($root $manifestation_s "710" "h" $carrierCategory)
-#oneTriple($root $manifestation_s "711" "h" $carrierCategory)
-	
-##dimensions
-#oneTriple($root $manifestation_s "300" "c" $dimensions)
-#oneTriple($root $manifestation_s "340" "c" $dimensions)
-
-##edition
-#oneTriple($root $manifestation_s "250" "a" $edition)
-
-##editionResponsibility
-#oneTriple($root $manifestation_s "250" "b" $editionResponsibility)
-
-##extent
-#oneTriple($root $manifestation_s "300" "eaf" $extent)
-
-##frequency
-#oneTriple($root $manifestation_s "310" "a" $frequency)
-
-##responsibilityStatement
-#oneTriple($root $manifestation_s "245" "c" $responsibilityStatement)
-
-
-##da sistemare
-##serialFirstIssue
-#oneTriple($root $manifestation_s "362" "a" $serialFirstIssue)
-##serialLastIssue
-#oneTriple($root $manifestation_s "362" "a" $serialLastIssue)
-
-##format
-#oneTriple($root $manifestation_s "856" "q" $format)
-#oneTriple($root $manifestation_s "340" "abcdefhljkmno" $format)
-
-##providerStatement
-#oneTripleCleaned($root $manifestation_s "260" "abc" $providerStatement)
-#oneTripleCleaned($root $manifestation_s "264" "abc" $providerStatement)
-
-##frequencyNote
-#oneTriple($root $manifestation_s "321" "ab" $frequencyNote)
-#oneTriple($root $manifestation_s "310" "ab" $frequencyNote)
-
-
-##awardNote
-#oneTriple($root $manifestation_s "586" "3a" $awardNote)
-
-##custodialHistory
-#oneTriple($root $manifestation_s "561" "3a" $custodialHistory)
-
-##illustrationNote
-#oneTriple($root $manifestation_s "300" "b" $illustrationNote)
-
-##notation
-#oneTriple($root $manifestation_s "546" "b" $notation)
-#oneTriple($root $manifestation_s "007" "01f" $notation)
-#oneTriple($root $manifestation_s "008" "23f" $notation)
-#oneTriple($root $manifestation_s "008" "29f" $notation)
-
-##preferrefCitation
-#oneTriple($root $manifestation_s "524" "a" $preferredCitation)
-
-##supplementaryContentNote
-#oneTriple($root $manifestation_s "504" "ab" $supplementaryContentNote)
-#oneTriple($root $manifestation_s "525" "a" $supplementaryContentNote)
-
-## graphicScaleNote
-#oneTriple($root $manifestation_s "507" "a" $graphicScaleNote)
-
-##aspectRatio
-#oneTriple($root $manifestation_s "007" "04m" $aspectRatio)
-#oneTriple($root $manifestation_s "345" "a" $aspectRatio)
-
-##duration
-#oneTriple($root $manifestation_s "306" "a" $duration)
-#triplesWithBlankNode($root $manifestation_s $language "041" "a" "language" $language_c $label "041" "a" $languageSource "041" "2")
-#triplesWithBlankNode($root $manifestation_s $arrangement "351" "a" "arrangement" $arrangement_c $materialOrganization "351" "a" $materialArrangement "351" "b" $materialHierarchicalLevel "351" "c" $materialPart "351" "3")
-
-#oneTriple($root $manifestation_s "024" "az" $uri)
-
-#oneTriple($root $manifestation_s "500" "3a" $note)
-#oneTriple($root $manifestation_s "508" "a" $creditsNote)
-#oneTriple($root $manifestation_s "541" "3abcdfhno" $immediateAcquisition)
-#oneTriple($root $manifestation_s "37" "abcf" $immediateAcquisition)
-
-##tag 008
-#set($genreString = "")
-#set($_008 = $xpath.cf('008', $root))
-#foreach($character in $_008.toCharArray())
-	#if($velocityCount == 24 || $velocityCount == 25 || $velocityCount == 26 || $velocityCount == 27)
-		#set($genreString = "${genreString}${character}")
-	#elseif($velocityCount == 20 && $function.isNotNullAndNotEmpty($character))
-		##formatofMusic
-		$manifestation_s $formatOfMusic "$character".
-	#end
-#end
-##genre
-#if($function.isNotNullAndNotEmpty($genreString))
-	#triplesWithBlankNode($root $cluster_uri $genre "008" "" "genre" $category_c $categoryValue "" "$genreString")
-#end
-	
-##heldItem
-#triplesWithBlankNode($root $manifestation_s $heldItem "852" "2" "heldItem" $heldItem_c $shelfMarkScheme "852" "2")
-#triplesWithBlankNode($root $manifestation_s $heldItem "050" "ab" "heldItem" $heldItem_c $shelfMarkLcc "050" "ab" $label "050" "ab")
-
-
-#oneTripleWithUri($root $manifestation_s "040" "e" $descriptionConventions "<http://id.loc.gov/vocabulary/descriptionConventions/")
-#oneTripleWithUri($root $manifestation_s "040" "b" $descriptionLanguage "")
-#oneTripleWithUri($root $manifestation_s "040" "a" $descriptionSource "<http://id.loc.gov/vocabulary/organizations/")

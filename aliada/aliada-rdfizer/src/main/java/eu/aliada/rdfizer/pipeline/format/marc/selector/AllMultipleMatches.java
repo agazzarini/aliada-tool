@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -70,7 +71,7 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 								putValue(
 										result,
 										tag,
-										append(node, subfields, new StringBuilder()).toString());
+										append(node, subfields, new StringBuilder(), tag).toString());
 								break;
 							}
 						}
@@ -90,8 +91,9 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 	 * @param builder
 	 * @return
 	 */
-	private StringBuilder append(final Node node,final String[] subfields, final StringBuilder builder) {
+	private StringBuilder append(final Node node,final String[] subfields, final StringBuilder builder, final String tag) {
 		NodeList list = node.getChildNodes();
+		LinkedList<String> attributeTextList = new LinkedList<String>();
 		for (int i = 0; i < list.getLength(); i++) {
 			Node actualNode = list.item(i);
 			NamedNodeMap attributes = actualNode.getAttributes();
@@ -103,13 +105,25 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 					String attrName = attr.getNodeName();
 					String attrValue = attr.getNodeValue();
 					if (attrName.equals(XML_ATTRIBUTE_CODE) && isAttributeValuePresent(attrValue,subfields)) {
-						builder.append(actualNode.getTextContent());
+						attributeTextList.add(actualNode.getTextContent());
+						//builder.append(actualNode.getTextContent());
 					}
 				}
 			}
 			}
 			
 		}
+		//this fix the problem of Univerisità del Sannio. Because they have multiple $9 on 500 tag. 
+		//Only last one $9 is our cluster subfield
+		if("500".equals(tag) && !attributeTextList.isEmpty()){			
+			builder.append(attributeTextList.getLast());	
+		}
+		else {
+			for (String text : attributeTextList){
+				builder.append(text);
+			}			
+		}
+		
 		return builder;
 	}
 	/**

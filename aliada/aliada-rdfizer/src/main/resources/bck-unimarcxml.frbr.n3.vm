@@ -130,7 +130,7 @@
 #macro(oneValue $s $firstValue $type $kind $predicate $label1) 	
 	#if($function.isNotNullAndNotEmpty($firstValue)) 		
 		#set($text = $function.escape($firstValue))
-    	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
+    	#set($s1 = "#uri_with_strong_normalization(${type} ${text}																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	)")
     	$s1 $is_a $kind .         			
     	$s1 $label1 "$text" . 
     	$s $predicate $s1 . 			
@@ -180,8 +180,44 @@
 #end	
 
 
+##per ora legge solo il secondo indicatore
+#macro(triples_blank_indicators $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $indicator2 $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode'| @ind2='$indicator2']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+		#end
+	#end
+#end
 
-#macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5)
+
+#macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
 	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))
 	#foreach($_tag in $_tags)
 		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
@@ -194,25 +230,60 @@
 			##definisco il blank node
 			$s1 $is_a $blankClass . 
 			##popolo il blank node
-			#if($predicate1)				
+			#if($function.isNotNullAndNotEmpty($predicate1))				
 				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
 			#end
-			#if($predicate2)				
+			#if($function.isNotNullAndNotEmpty($predicate2))				
 				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
 			#end
-			#if($predicate3)				
+			#if($function.isNotNullAndNotEmpty($predicate3))			
 				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
 			#end
-			#if($predicate4)				
+			#if($function.isNotNullAndNotEmpty($predicate4))				
 				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
 			#end
-			#if($predicate5)				
+			#if($function.isNotNullAndNotEmpty($predicate5))				
 				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
 			#end
 		#end
 	#end
 #end
 
+
+#macro (triplesWithBlankOne $root $soggetto $predicato $_tag  $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+	#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+	#end
+#end
 
 #macro(oneTriple $root $soggetto $tag $field $predicate)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
@@ -225,22 +296,46 @@
 #end
 
 
-
 #macro(oneTripleWithUri $root $soggetto $tag $field $predicate $uri)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
 	#foreach($_tag in $_tags)		
         #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))
 		#if($function.isNotNullAndNotEmpty($fieldValue))
-			$soggetto $predicate $uri/$fieldValue> .		
+			#set($eventualAngularParentesis = "")
+			#if(!$function.isNotNullAndNotEmpty($uri)) 				
+				#set($eventualAngularParentesis = "<")
+			#end
+			$soggetto $predicate $eventualAngularParentesis$uri$fieldValue> .	
 		#end
 	#end
 #end
 
+
 #macro(oneTripleInner $soggetto $predicate $_tag $field $tagDiscrimine)
+	#if($predicate)
+		#if($function.isNotNullAndNotEmpty($tagDiscrimine))	
+			#set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))	
+			#if($function.isNotNullAndNotEmpty($fieldValue))
+				$s1 $predicate "$fieldValue" .
+			#end
+		#else
+			#if($function.isNotNullAndNotEmpty($field))		
+    			## allora in field non ho un sottocampo, ma un campo testuale statico
+    			$s1 $predicate "$field" .
+			#end
+		#end
+	#end		
+#end
+
+
+## filter is type "4-7" make a substring of 4th - 7th position
+#macro(oneTripleInnerFilter $soggetto $predicate $_tag $field $tagDiscrimine $filter)
 	#if($predicate)
 		#if($function.isNotNullAndNotEmpty($tagDiscrimine))
 			#set($fieldValue = $xpath.combine($_tag, "$field"))
-			#if($fieldValue)
+			#if($function.isNotNullAndNotEmpty($fieldValue) && 
+					!$fieldValue.contains("---"))
+				#set($fieldValue = "$function.filterString($fieldValue, $filter)")
 				$s1 $predicate "$fieldValue" .
 			#end
 		#else
@@ -317,8 +412,9 @@
 	#else
 		#set($firstAddend = $_v721)		
 	#end	
+		
 	
-	$cluster_uri $authorizedAccessPoint "$firstAddend. $title" .
+	$cluster_uri $authorizedAccessPoint "$firstAddend. $function.escape($title)" .
 #end
 	
 
@@ -349,7 +445,8 @@
 					$cluster_uri $authorizedAccessPoint "$text" . 
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .
-					$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . ##versione alternativa per viaf in bibframe
+					$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . 
+					##versione alternativa per viaf in bibframe
 					## le teniamo entrambe per completezza
 					#set($firstTimeViaf = false)
 				#else
@@ -377,7 +474,7 @@
 			
 			#set($firstTimeViaf = true)
 			#foreach($cluster_entry in $cluster.entries)
-				#if($cluster_entry.preferred)
+				#if($cluster_entry.preferred)					
 					#threeValue($cluster_uri $cluster_entry.heading "workTitle" $title_c $workTitle $titleValue $titleType "Preferred Title" $subtitle "") 
 					
 					#setAuthorizedAccessPoint($root $cluster_uri $cluster_entry.heading)
@@ -448,7 +545,7 @@
 		#set($titleNode = "#uri_with_strong_normalization('workTitle' ${function.escape($cluster_entry.heading)})")
 		#set($values = $xpath.combine($tag, "bjklmnqrsuvwxyz23"))
 		#if($function.isNotNullAndNotEmpty($values))
-			$titleNode $titleAttribute $values .			
+			$titleNode $titleAttribute "$values" .			
 		#end
 		##
 		
@@ -500,9 +597,28 @@
 	#oneTripleWithUri($root $cluster_uri "680" "a" $classificationLcc "<http://id.loc.gov/authorities/classification")
 	#oneTripleWithUri($root $cluster_uri "686" "a" $classificationNlm "<http://nlm.example.org/classification")
 
-	##genre
-	##in realtà bisogna selezionare solo la poszione 4-7 del $a
-	#triplesWithBlankNode($root $cluster_uri $genre "105" "a" "genre" $category_c $categoryValue "105" "a")
+	##
+	##genre selezione posizione 4-7
+	#set ($_tags = $xpath.many("datafield[@tag='105']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "a"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization('genre'${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$cluster_uri $genre $s1 .
+			##definisco il blank node
+			$s1 $is_a $category_c . 
+			##popolo il blank node
+			
+			#oneTripleInnerFilter($s1 $categoryValue $_tag "a" "105" "4-7")				
+						
+		#end
+	#end
+	
+	
+	
 
 	##cartography
 	#triplesWithBlankNode($root $cluster_uri $cartography "206" "e" "cartography" $cartography_c $cartographicAscensionAndDeclination "206" "e" $cartographicCoordinates "206" "d" $cartographicEquinox "206" "f" $cartographicProjection "206" "c" $cartographicScale "206" "b" )
