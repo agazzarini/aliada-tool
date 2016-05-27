@@ -8,6 +8,7 @@ package eu.aliada.rdfizer.pipeline.format.xml;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -18,12 +19,16 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+
+import eu.aliada.rdfizer.Function;
+import eu.aliada.rdfizer.datasource.Cache;
 
 /**
  * ALIADA O(ptimized)XPath tool.
@@ -34,6 +39,9 @@ import org.xml.sax.InputSource;
  */
 @Component
 public class OXPath {
+	
+	@Autowired
+	private Function function;
 	
 	private final static ImmutableNodeList EMPTY_LIST = new ImmutableNodeList(new MutableNodeList());
 	
@@ -276,7 +284,7 @@ public class OXPath {
 	 * @param expression the expression which actually is a sequence of subfields.
 	 * @return the subfield values in sequence, concatenated by a space.
 	 */
-	public String combine(final Element node, final String expression) {
+	public String combine(final Element node, final String expression) {		
 		final NodeList subfields = node.getElementsByTagName("*");
 		final String result = Arrays.stream(expression.split(""))	
 			.map(subfield -> {
@@ -293,7 +301,60 @@ public class OXPath {
 			.reduce("", (a, b) -> a + b)
 			.trim();
 		return result;
+	}
+	
+	/**
+	 * Extracts a given set of subfields from the given node (tag).
+	 * 
+	 * @param node the node representing the Datafield node.
+	 * @param expression the expression which actually is a sequence of subfields.
+	 * @param filters the expression express key-value as subfield-methodHandlerName. The first char is always subfield
+	 * @return the subfield values in sequence, concatenated by a space.
+	 */
+
+	public String combineWithFilters(final Element node, final String expression, final String filters) {		
+		final String[] filtersArray = filters.split(";");		
+		HashMap<String,String> mapFilter = new HashMap();
+		for (String current : filtersArray){			
+			String[] tmpArray = current.split(":");
+			mapFilter.put(tmpArray[0], tmpArray[1]);
+		}
+				
+		final NodeList subfields = node.getElementsByTagName("*");
+		String result = "";
+		result = Arrays.stream(expression.split(""))	
+			.map(subfield -> {
+				for (int i = 0; i < subfields.getLength(); i++) {
+					if (subfields.item(i) instanceof Element) {
+						final Element e = (Element)subfields.item(i);
+						if (subfield.equals(e.getAttribute("code"))) {
+							//e.getAttribute("code") is the subfield in the record
+							//subfield is the subfield I search in the function
+							
+							if(mapFilter.containsKey(subfield)){									
+								try{
+									java.lang.reflect.Method method = function.getClass().getMethod(mapFilter.get(subfield), e.getTextContent().getClass());
+									return  method.invoke(function, e.getTextContent()) + "";
+									
+								}
+								catch(Exception exc){
+									exc.printStackTrace();
+								}
+							}
+							else {
+								return e.getTextContent();
+							}
+						}
+					} 
+				}
+				return "";
+			})		
+			.reduce("", (a, b) -> a + b)
+			.trim();
+		return result;
 	}	
+	
+	
 	
 	/**
 	 * Evaluates a given XPATH and returns the result as a single node.
@@ -366,7 +427,7 @@ public class OXPath {
 			.append(tag)
 			.append("']")
 			.toString();
-		return value(xpath, record);
+		return value(xpath, record);		
 	}
 	
 	/**

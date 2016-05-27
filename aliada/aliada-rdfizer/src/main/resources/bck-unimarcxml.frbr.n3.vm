@@ -130,7 +130,7 @@
 #macro(oneValue $s $firstValue $type $kind $predicate $label1) 	
 	#if($function.isNotNullAndNotEmpty($firstValue)) 		
 		#set($text = $function.escape($firstValue))
-    	#set($s1 = "#uri_with_strong_normalization(${type} ${text}																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	)")
+    	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	)")
     	$s1 $is_a $kind .         			
     	$s1 $label1 "$text" . 
     	$s $predicate $s1 . 			
@@ -299,8 +299,9 @@
 #macro(oneTripleWithUri $root $soggetto $tag $field $predicate $uri)
 	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
 	#foreach($_tag in $_tags)		
-        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))
+        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))		
 		#if($function.isNotNullAndNotEmpty($fieldValue))
+			#set($fieldValue = $function.urlValidator($fieldValue))
 			#set($eventualAngularParentesis = "")
 			#if(!$function.isNotNullAndNotEmpty($uri)) 				
 				#set($eventualAngularParentesis = "<")
@@ -316,12 +317,12 @@
 		#if($function.isNotNullAndNotEmpty($tagDiscrimine))	
 			#set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))	
 			#if($function.isNotNullAndNotEmpty($fieldValue))
-				$s1 $predicate "$fieldValue" .
+				$soggetto $predicate "$fieldValue" .
 			#end
 		#else
 			#if($function.isNotNullAndNotEmpty($field))		
     			## allora in field non ho un sottocampo, ma un campo testuale statico
-    			$s1 $predicate "$field" .
+    			$soggetto $predicate "$field" .
 			#end
 		#end
 	#end		
@@ -336,12 +337,12 @@
 			#if($function.isNotNullAndNotEmpty($fieldValue) && 
 					!$fieldValue.contains("---"))
 				#set($fieldValue = "$function.filterString($fieldValue, $filter)")
-				$s1 $predicate "$fieldValue" .
+				$soggetto $predicate "$fieldValue" .
 			#end
 		#else
 			#if($function.isNotNullAndNotEmpty($field))
     			## allora in field non ho un sottocampo, ma un campo testuale statico
-    			$s1 $predicate "$field" .
+    			$soggetto $predicate "$field" .
 			#end
 		#end
 	#end		
@@ -444,8 +445,8 @@
 					$cluster_uri $label "$text" . 
 					$cluster_uri $authorizedAccessPoint "$text" . 
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
-					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .
-					$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . 
+					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> .
+					$cluster_uri $referenceAuthority <http://viaf.org/viaf/${cluster_entry.viafId}> . 
 					##versione alternativa per viaf in bibframe
 					## le teniamo entrambe per completezza
 					#set($firstTimeViaf = false)

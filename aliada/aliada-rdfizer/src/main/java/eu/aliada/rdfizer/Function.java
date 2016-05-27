@@ -358,4 +358,33 @@ public class Function {
 	public String brutalEscape (final String text){
 		return text.replaceAll( "\"", "");
 	}
+	
+	public String substringFirstSpace(final String text){		
+		if(text.indexOf(" ") > -1){
+			return text.substring(0, text.indexOf(" "));	
+		}
+		return text;
+	}
+	
+	public String substringByPosition(final String text, final String position){
+		String result = "";
+		try {
+			String [] positions = position.split("-");
+			if(positions.length == 1){
+				result = text.charAt(Integer.parseInt(positions[0])) + "";
+			}
+			else{
+				result = text.substring(Integer.parseInt(positions[0]), Integer.parseInt(positions[1]) + 1);
+			}			
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			return "";		
+		}		
+		return result.trim();		
+	}
+	
+	public String urlValidator (final String text){
+		return text.replaceAll(" ", "-");
+	}
 }

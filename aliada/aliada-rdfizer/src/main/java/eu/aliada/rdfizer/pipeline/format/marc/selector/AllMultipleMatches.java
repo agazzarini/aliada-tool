@@ -50,7 +50,7 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 	 * @see eu.aliada.rdfizer.pipeline.format.marc.selector.Expression#evaluate(java.lang.Object)
 	 */
 	@Override
-	public Map<String, List<String>> evaluate(final K target) {
+	public Map<String, List<String>> evaluate(final K target) {		
 		final Map<String, List<String>> result = new LinkedHashMap<String, List<String>>(expressions.length);
 		for (final Expression<List<Node>, K> expression : expressions) {
 			Map<String, Object> map = getMarcSpecs(expression.specs());
@@ -113,10 +113,11 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 			}
 			
 		}
+		
 		//this fix the problem of Univerisità del Sannio. Because they have multiple $9 on 500 tag. 
 		//Only last one $9 is our cluster subfield
 		if("500".equals(tag) && !attributeTextList.isEmpty()){			
-			builder.append(attributeTextList.getLast());	
+			builder.append(findNumeric(attributeTextList));	
 		}
 		else {
 			for (String text : attributeTextList){
@@ -126,6 +127,24 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 		
 		return builder;
 	}
+	
+	/**
+	 * Find the first string that match integer format
+	 * @param list
+	 * @return string that match integer
+	 * @return empty string otherwise
+	 */
+	
+	private String findNumeric (final LinkedList<String> list){
+		for (String current : list){
+			if (current.matches("^-?\\d+$")){
+				return current;
+			}
+		}
+		System.out.println("no number!");
+		return "";
+	}
+	
 	/**
 	 * Update the values of map Object.
 	 * The method check for the value stored in the map ('key' as tag) after update or create the new value.
