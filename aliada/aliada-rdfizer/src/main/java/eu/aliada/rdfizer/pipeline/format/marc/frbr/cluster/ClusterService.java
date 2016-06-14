@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -144,10 +146,18 @@ public class ClusterService {
 	 */
 	Cluster loadNameCluster(final String heading) throws SQLException {
 		try (final Connection connection = clusterDataSource.getConnection()) {
-			try (final PreparedStatement statement = connection.prepareStatement("select * from clstr_nme_grp where clstr_id = ?")) {
+//			final String query = "select  distinct ON (name, pref_frm) a.clstr_id, a.hdg_id, a.name, a.pref_frm, b.ext_lnk_cde, b.url, b.ext_lnk_id " +
+//					"from clstr_nme_grp a join nme_ext_lnk b on a.clstr_id = b.clstr_id " +
+//					"where a.clstr_id = ?";
+			
+			final List<String> externalUri = loadExternalUri(heading, connection);
+			
+			final String query = "select * from clstr_nme_grp where clstr_id = ?";
+			try (final PreparedStatement statement = connection.prepareStatement(query)) {				
+				
 				statement.setInt(1, Integer.parseInt(heading));
 				try( final ResultSet rs = statement.executeQuery()) {
-					Cluster cluster = null;
+					Cluster cluster = null;					
 					while (rs.next()) {
 						if (cluster == null) {
 							cluster = new Cluster(rs.getInt("clstr_id"));
@@ -155,20 +165,34 @@ public class ClusterService {
 						
 						String name = rs.getString("name");
 						Boolean pref_form = "t".equals(rs.getString("pref_frm"));					
-						String hdg_id = rs.getString("hdg_id");
+						String hdg_id = rs.getString("hdg_id");						
 						String viaf_id = null;
 						if (hdg_id.contains("http://viaf.org/viaf")){
 							viaf_id = hdg_id;
-						}
-								
+						}						
+						
 						cluster.addEntry(
-								new ClusterEntry(name, pref_form,hdg_id, viaf_id));						
+								new ClusterEntry(name, pref_form,hdg_id, viaf_id, externalUri));						
 					}
 					loadTitlesBelongingToACluster(cluster, connection);
 					return cluster;
 				}
 			}
 		}
+	}
+	List<String> loadExternalUri (final String heading, Connection connection) throws SQLException { 
+			List<String> resultList = new ArrayList<String>();
+			final String query = "select  distinct url from nme_ext_lnk  where clstr_id = ?";
+			try (final PreparedStatement statement = connection.prepareStatement(query)) {				
+				statement.setInt(1, Integer.parseInt(heading));
+				try( final ResultSet rs = statement.executeQuery()) {				
+					while (rs.next()) {						
+						resultList.add(rs.getString("url"));
+						
+					}
+					return resultList;
+				}
+			}		
 	}
 	
 	/**
@@ -195,7 +219,7 @@ public class ClusterService {
 										rs.getString("ttl_str_txt"), 
 										rs.getString("typ_ttl") == null,
 										rs.getString("ttl_hdg_id"),
-										rs.getString("viaf_id")));		
+										rs.getString("viaf_id"), null));		
 						
 						
 					}					

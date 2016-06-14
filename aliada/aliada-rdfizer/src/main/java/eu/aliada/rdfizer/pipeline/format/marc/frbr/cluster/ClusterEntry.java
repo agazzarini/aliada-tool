@@ -1,5 +1,7 @@
 package eu.aliada.rdfizer.pipeline.format.marc.frbr.cluster;
 
+import java.util.List;
+
 /**
  * A cluster entry.
  * 
@@ -10,7 +12,8 @@ public final class ClusterEntry {
 	public final String heading;
 	public final boolean preferred;
 	public final String id;
-	public final String viafId;
+	public final String viafId;	
+	public final List<String> externalLink;
 	
 	/**
 	 * Builds a new cluster entry.
@@ -20,11 +23,12 @@ public final class ClusterEntry {
 	 * @param id the heading identifier.
 	 * @param viafId (optional) the VIAF identifier.
 	 */
-	public ClusterEntry(final String heading, final boolean preferred, final String id, final String viafId) {
+	public ClusterEntry(final String heading, final boolean preferred, final String id, final String viafId, final List<String> externalLink) {
 		this.heading = heading;
 		this.preferred = preferred;
 		this.id = id;
 		this.viafId = viafId;
+		this.externalLink = externalLink;
 	}
 
 	/**
@@ -61,5 +65,15 @@ public final class ClusterEntry {
 	 */
 	public String getViafId() {		
 		return viafId;
+	}
+	
+	/**
+	 * Returns the ISNI identifier associated with this entry.
+	 * 
+	 * @return the ISNI identifier associated with this entry.
+	 */
+	
+	public List<String> getExternalLink() {
+		return externalLink;
 	}
 }
