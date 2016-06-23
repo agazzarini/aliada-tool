@@ -71,7 +71,7 @@ public class ClusterService {
 		if (cluster == null) {
 			cluster = loadTitleCluster(heading);
 			if (cluster != null) {
-				cachedNameClusters.put(heading, cluster);
+				cachedTitleClusters.put(heading, cluster);
 			} else {
 				// Do not cache fake clusters!
 				return new FakeCluster(heading);
@@ -145,13 +145,12 @@ public class ClusterService {
 	 * @throws SQLException in case of data access failure.
 	 */
 	Cluster loadNameCluster(final String heading) throws SQLException {
+		final List<String> externalUri = loadExternalUri(heading);
 		try (final Connection connection = clusterDataSource.getConnection()) {
 //			final String query = "select  distinct ON (name, pref_frm) a.clstr_id, a.hdg_id, a.name, a.pref_frm, b.ext_lnk_cde, b.url, b.ext_lnk_id " +
 //					"from clstr_nme_grp a join nme_ext_lnk b on a.clstr_id = b.clstr_id " +
 //					"where a.clstr_id = ?";
-			
-			final List<String> externalUri = loadExternalUri(heading, connection);
-			
+						
 			final String query = "select * from clstr_nme_grp where clstr_id = ?";
 			try (final PreparedStatement statement = connection.prepareStatement(query)) {				
 				
@@ -172,7 +171,8 @@ public class ClusterService {
 						}						
 						
 						cluster.addEntry(
-								new ClusterEntry(name, pref_form,hdg_id, viaf_id, externalUri));						
+								new ClusterEntry(name, pref_form,hdg_id, viaf_id, externalUri));
+						//System.out.println("viaf id: " + viaf_id);
 					}
 					loadTitlesBelongingToACluster(cluster, connection);
 					return cluster;
@@ -180,19 +180,20 @@ public class ClusterService {
 			}
 		}
 	}
-	List<String> loadExternalUri (final String heading, Connection connection) throws SQLException { 
+	List<String> loadExternalUri (final String heading) throws SQLException { 
+		try (final Connection connection = clusterDataSource.getConnection()) {
 			List<String> resultList = new ArrayList<String>();
 			final String query = "select  distinct url from nme_ext_lnk  where clstr_id = ?";
 			try (final PreparedStatement statement = connection.prepareStatement(query)) {				
 				statement.setInt(1, Integer.parseInt(heading));
 				try( final ResultSet rs = statement.executeQuery()) {				
 					while (rs.next()) {						
-						resultList.add(rs.getString("url"));
-						
+						resultList.add(rs.getString("url"));						
 					}
 					return resultList;
 				}
-			}		
+			}
+		}
 	}
 	
 	/**
@@ -213,7 +214,11 @@ public class ClusterService {
 						if (cluster == null) {
 							cluster = new Cluster(rs.getInt("clstr_id"));
 						}
-						
+//						String viaf_id = rs.getString("viaf_id");
+//						if (viaf_id != null && !viaf_id.contains("http://viaf.org/viaf")){
+//							System.out.println("+++++ " + heading + "---> to viaf: " + viaf_id + " +++++");
+//						}
+												
 						cluster.addEntry(
 								new ClusterEntry(
 										rs.getString("ttl_str_txt"), 

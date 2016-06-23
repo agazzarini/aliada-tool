@@ -8,6 +8,7 @@ package eu.aliada.rdfizer;
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import eu.aliada.rdfizer.datasource.Cache;
 import eu.aliada.rdfizer.datasource.rdbms.JobInstance;
 import eu.aliada.rdfizer.pipeline.format.marc.frbr.cluster.Cluster;
 import eu.aliada.rdfizer.pipeline.format.marc.frbr.cluster.ClusterService;
+import eu.aliada.rdfizer.pipeline.format.marc.frbr.model.FrbrDocument;
 import eu.aliada.rdfizer.pipeline.format.xml.OXPath;
 import eu.aliada.rdfizer.pipeline.nlp.NERSingletonService;
 import eu.aliada.shared.ID;
@@ -350,9 +352,12 @@ public class Function {
 	
 	}
 	
-	public String filterString (String text, String filter){
+	public String filterString (String text, String filter){		
 		String [] filters = filter.split("-");
-		return text.substring(Integer.parseInt(filters[0])-1, Integer.parseInt(filters[1])-1);
+		int index_1 = Integer.parseInt(filters[0])-1;
+		int index_2 = Integer.parseInt(filters[1])-1;
+		index_2 = index_2 > text.length() ? text.length()-1 : index_2;
+		return text.substring(index_1, index_2);
 	}
 	
 	public String brutalEscape (final String text){
@@ -386,5 +391,18 @@ public class Function {
 	
 	public String urlValidator (final String text){
 		return text.replaceAll(" ", "-");
+	}
+	
+	public String printAuthors (final FrbrDocument doc){
+		StringBuilder result = new StringBuilder(); 
+		Collection<List<Cluster>> list = doc.getPersonIDs().values();		
+		for (List s : list){
+			for (Object c : s){
+				Cluster cl = (Cluster) c;
+				
+				result.append(cl.getId() + ", " );
+			}
+		}
+		return result.toString();
 	}
 }
