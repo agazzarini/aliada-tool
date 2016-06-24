@@ -422,6 +422,9 @@
 
 ######### fine macro #######################
 
+##---- ANALIZZANDO --- $frbr.manifestationID  ------
+##
+##
 
 #set($people = $frbr.personIDs)
 #foreach($entry in $people.entrySet()) 
@@ -437,14 +440,17 @@
 			#foreach($work_id in $cluster.parents())
 				#set($work_uri = "#uri_literal('Work' $work_id)")
 				$work_uri #bf('creator') $cluster_uri . 
+				$cluster_uri #bf('relatedTo') $work_uri .
 			#end 
 			#set($firstTimeViaf = true)			
 			#set($firstTimeExternalLink = true)
 			#foreach($cluster_entry in $cluster.entries)	
 											
 				#if ($cluster_entry.viafId && $firstTimeViaf)
-					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .
-					$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . 
+					##if($cluster_entry.viafId.contains("http://"))
+						$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .
+						$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . 
+					##end
 					##versione alternativa per viaf in bibframe
 					## le teniamo entrambe per completezza
 					#set($firstTimeViaf = false)
@@ -555,7 +561,7 @@
 		
 		##titleAttribute
 		#set($titleNode = "#uri_with_strong_normalization('workTitle' ${function.escape($cluster_entry.heading)})")
-		#set($values = $xpath.combine($tag, "bjklmnqrsuvwxyz23"))
+		#set($values = $xpath.combine($tag, "bjklmnqrsuvwxyz2"))
 		#if($function.isNotNullAndNotEmpty($values))
 			$titleNode $titleAttribute "$values" .			
 		#end

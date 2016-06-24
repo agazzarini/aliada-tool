@@ -639,6 +639,7 @@
 			#foreach($work_id in $cluster.parents())
 				#set($work_uri = "#uri_literal('Work' $work_id)")
 				$work_uri #bf('creator') $cluster_uri . 
+				$cluster_uri #bf('relatedTo') $work_uri .
 			#end 
 			#set($firstTimeViaf = true)		
 			#set($firstTimeExternalLink = true)
