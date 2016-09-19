@@ -1,8 +1,7 @@
 #macro (bf $v)<http://bibframe.org/vocab/$v>#end 
 		
 		
-
-#set($manifestation_s = "#uri('Instance' $frbr.manifestationID)") 
+#set($manifestation_s = "#uri_literal('Instance' $frbr.manifestationID)") 
 #set($is_a = "#rdf('type')")
 #set($local = "#bf('local')")
 #set($identifier_c = "#bf('Identifier')")
