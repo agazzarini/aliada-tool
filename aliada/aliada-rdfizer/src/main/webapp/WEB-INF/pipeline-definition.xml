@@ -15,10 +15,14 @@
 	<bean id="count-debugger" class="eu.aliada.rdfizer.pipeline.processors.JustDebugTriplesCount"/>
 	<bean id="no-op" class="eu.aliada.rdfizer.pipeline.processors.NoOp"/>
 	<bean id="add-2-rdf-store" class="eu.aliada.rdfizer.pipeline.processors.AddToRDFStore">
-	  <constructor-arg value="http://test-share-cat.oseegenius.it:9999/blazegraph/namespace/aliada/sparql"/> 
-<!--		<constructor-arg value="http://localhost:9999/blazegraph/namespace/aliada/sparql"/> -->
+<!--	  <constructor-arg value="http://test-share-cat.oseegenius.it:9999/blazegraph/namespace/aliada/sparql"/> --> 
+		<constructor-arg value="http://localhost:9999/blazegraph/namespace/aliada/sparql"/>
 	    <constructor-arg value="1000"/>
 	    <constructor-arg value="-1"/>
+	</bean>
+	<bean id="delta" class="eu.aliada.rdfizer.delta.Delta">
+		<constructor-arg value="http://localhost:9999/blazegraph/namespace/aliada/sparql"/>
+		<constructor-arg value="http://rdf.atcult.it/"/>
 	</bean>
 	<bean id="check-job-completeness" class="eu.aliada.rdfizer.pipeline.processors.CheckJobCompleteness"/>
 	<bean id="xpath" class="eu.aliada.rdfizer.pipeline.format.xml.XPath"/> 
@@ -49,6 +53,15 @@
 			</setHeader>
 			<to uri="seda:sanity-check-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
 		</route>
+		<!-- 
+		<route>
+			<from uri="file:{{marcxml.input.dir}}?move=../.done&amp;preMove=.working" />
+			<setHeader headerName="format">
+				<constant>marcxml</constant>
+			</setHeader>
+			<to uri="seda:sanity-check-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
+		</route>
+		-->
 		<route>
 			<from uri="seda:sanity-check-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
 			<process ref="validate_input_path" />
@@ -66,6 +79,17 @@
 						<to uri="seda:marcxml-record-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
 					</split>
 				</when>		
+				<!-- 
+				<when>
+					<simple>${in.header.format} == 'marcxml'</simple>
+					<process ref="count-marcxml-records"/>
+					<process ref="run-marcxml-validation"/>
+					<split streaming="true">
+						<tokenize token="record" xml="true" />
+						<to uri="seda:marcxml-record-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
+					</split>
+				</when>		
+				-->
 				<otherwise>
 					<log message="&lt;RDF-IZER-00023> : Unsupported format has been detected in input datafile." loggingLevel="ERROR" logName="eu.aliada.pipeline"/>			    
 				</otherwise>		
@@ -88,8 +112,9 @@
 		</route>
 		<route> 
 			<from uri="seda:triples-channel?concurrentConsumers=10&amp;size=250&amp;blockWhenFull=true" />
- 			<process ref="add-2-rdf-store"/> 
-<!-- 		<process ref="debugger"/>  -->
+			<process ref="debugger"/>
+<!-- 		<process ref="add-2-rdf-store"/>  -->
+<!--		<process ref="debugger"/> -->
 		</route>
 	</camelContext>
 </beans>
