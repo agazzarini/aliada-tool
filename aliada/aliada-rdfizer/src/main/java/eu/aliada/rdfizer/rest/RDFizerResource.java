@@ -30,6 +30,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -44,7 +45,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.codahale.metrics.EWMA;
 
 import eu.aliada.rdfizer.datasource.Cache;
 import eu.aliada.rdfizer.datasource.rdbms.JobInstance;
@@ -52,6 +62,7 @@ import eu.aliada.rdfizer.datasource.rdbms.JobInstanceRepository;
 import eu.aliada.rdfizer.datasource.rdbms.JobStats;
 import eu.aliada.rdfizer.datasource.rdbms.JobStatsRepository;
 import eu.aliada.rdfizer.datasource.rdbms.ValidationMessageRepository;
+import eu.aliada.rdfizer.delta.Delta;
 import eu.aliada.rdfizer.log.MessageCatalog;
 import eu.aliada.rdfizer.mx.InMemoryJobResourceRegistry;
 import eu.aliada.rdfizer.mx.ManagementRegistrar;
@@ -104,6 +115,9 @@ public class RDFizerResource implements RDFizer {
 	
 	@Autowired
 	protected JobStatsRepository jobStatsRepository;
+	
+	@Autowired
+	protected Delta delta;
 
 	protected boolean enabled = true;
 	
@@ -120,6 +134,77 @@ public class RDFizerResource implements RDFizer {
     public String ping() {
         return "ALIADA Project (UNIMARC Fork) -- RDFizer V2.0";
     }
+	
+	/**
+	 * Delete all info connected to the record list
+	 * @param list of record in json. I.e. { "records": ["UNIBAS000037578", "UNINA000683506"] }
+	 * 
+	 */	
+	@POST
+	@Path("/deleteRecord")
+	@RequestMapping(value = "/deleteRecord", method = RequestMethod.POST)
+	@ResponseBody
+	public String deleteRecord(@RequestBody String json) {		
+		LOGGER.debug("deleteRecord called");		
+		boolean result = delta.deleteRecord(json);		
+		if(result) {
+			return String.valueOf(HttpStatus.OK);
+		}
+		else {
+			return String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+			
+	/**
+	 * Delete all info connected to the cluster list
+	 *  { "clusters": [
+     * 		{"id": "3522", "type": "NAME"},
+     * 		{"id": "3436", "type": "TITLE"} ]  }  
+     *  
+	 * type must be NAME or TITLE
+	 */	
+	@POST
+	@Path("/deleteCluster")
+	@RequestMapping(value = "/deleteCluster", method = RequestMethod.POST)
+	@ResponseBody
+	public String deleteCluster(@RequestBody String json) {
+		LOGGER.debug("deleteCluster called");		
+		boolean result = delta.deleteCluster(json);	
+		if(result) {
+			return String.valueOf(HttpStatus.OK);
+		}
+		else {
+			return String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR);
+		}		
+	}
+	
+	
+	/**
+	 * update info connected to the cluster list
+	 *  { "clusters": [
+     * 		{"id": "3522", "type": "NAME"},
+     * 		{"id": "3436", "type": "TITLE"} ]  }  
+     *  
+	 * type must be NAME or TITLE
+	 */	
+	@POST
+	@Path("/updateCluster")
+	@RequestMapping(value = "/updateCluster", method = RequestMethod.POST)
+	@ResponseBody
+	public String updateCluster(@RequestBody String json) {
+		LOGGER.debug("updateCluster called");		
+		boolean result = delta.updateCluster(json);	
+		if(result) {
+			return String.valueOf(HttpStatus.OK);
+		}
+		else {
+			return String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR);
+		}		
+	}
+	
+	
+	
+	
 	
 	@PUT
 	@Path("/enable")
