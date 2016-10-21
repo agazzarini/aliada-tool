@@ -1,0 +1,478 @@
+#macro (bf $v)<http://bibframe.org/vocab/$v>#end 
+		
+#set($manifestation_s = "#uri_literal('Instance' $frbr.manifestationID)")
+
+#set($is_a = "#rdf('type')")
+#set($rdf_value = "#rdf('value')")
+#set($rdfs_label = "<http://www.w3.org/2000/01/rdf-schema#label>")
+#set($lc_relator = "<http://id.loc.gov/vocabulary/relators>")
+
+#set($adminMetadata = "#bf('adminMetadata')")
+#set($adminMetadata_c = "#bf('AdminMetadata')")
+#set($agent_c = "#bf('Agent')")
+#set($agent = "#bf('agent')")
+#set($arrangement = "#bf('arrangement')")
+#set($arrangement_c = "#bf('Arrangement')")
+#set($aspectRatio = "#bf('aspectRatio')")
+#set($aspectRatio_c = "#bf('AspectRatio')")
+#set($carrier = "#bf('carrier')")
+#set($carrier_c = "#bf('Carrier')")
+#set($cartography = "#bf('cartography')")
+#set($cartography_c = "#bf('Cartography')")
+#set($ascensionAndDeclination = "#bf('ascensionAndDeclination')")
+#set($classification = "#bf('classification')")
+#set($classification_c = "#bf('Classification')")
+#set($classificationLcc_c = "#bf('ClassificationLcc')")
+#set($classificationDdc_c = "#bf('ClassificationDdc')")
+#set($classificationUdc_c = "#bf('ClassificationUdc')")
+#set($classificationNlm_c = "#bf('ClassificationNlm')")
+#set($collectiveTitle_c = "#bf('CollectiveTitle')")
+#set($content_c = "#bf('Content')")
+#set($content = "#bf('content')")
+#set($contributor = "#bf('contributor')")
+#set($coordinates = "#bf('coordinates')")
+#set($credits = "#bf('credits')")
+#set($custodialHistory = "#bf('custodialHistory')")
+#set($date = "#bf('date')")
+#set($date_c = "#bf('Date')")
+#set($descriptionAuthentication = "#bf('descriptionAuthentication')")
+#set($descriptionAuthentication_c = "#bf('DescriptionAuthentication')")
+#set($descriptionConventions = "#bf('descriptionConventions')")
+#set($descriptionConventions_c = "#bf('DescriptionConventions')")
+#set($descriptionLanguage = "#bf('descriptionLanguage')")
+#set($dimensions = "#bf('dimensions')")
+#set($dissertationIdentifier_c = "#bf('DissertationIdentifier')")
+#set($duration = "#bf('duration')")
+#set($editionStatement = "#bf('editionStatement')")
+#set($equinox = "#bf('equinox')")
+#set($eventContentOf = "#bf('eventContentOf')")
+#set($event_c = "#bf('Event')")
+#set($exclusionGRing = "#bf('exclusionGRing')")
+#set($extent = "#bf('extent')")
+#set($extent_c = "#bf('Extent')")
+#set($firstIssue = "#bf('firstIssue')")
+#set($frequency = "#bf('frequency')")
+#set($frequency_c = "#bf('Frequency')")
+#set($genreForm = "#bf('genreForm')")
+#set($genreForm_c = "#bf('GenreForm')")
+#set($keyTitle_c = "#bf('KeyTitle')")
+#set($hasItem = "#bf('hasItem')")
+#set($held_by = "#bf('held_by')")
+#set($hierarchicalLevel = "#bf('hierarchicalLevel')")
+#set($identifiedBy = "#bf('identifiedBy')")
+#set($identifier_c = "#bf('Identifier')")
+#set($immediateAcquisition = "#bf('immediateAcquisition')")
+#set($instance_c = "#bf('Instance')")
+#set($instanceTitle_c = "#bf('InstanceTitle')")
+#set($isbn_c = "#bf('Isbn')")
+#set($issnL_c = "#bf('IssnL')")
+#set($issuedWith = "#bf('issuedWith')")
+#set($item_c = "#bf('Item')")
+#set($language_c = "#bf('Language')")
+#set($language = "#bf('language')")
+#set($lastIssue = "#bf('lastIssue')")
+#set($lccn_c = "#bf('Lccn')")
+#set($legalDate = "#bf('legalDate')")
+#set($mainTitle = "#bf('mainTitle')")
+#set($media = "#bf('media')")
+#set($media_c = "#bf('Media')")
+#set($musicFormat = "#bf('musicFormat')")
+#set($musicFormat_c = "#bf('MusicFormat')")
+#set($musicKey = "#bf('musicKey')")
+#set($musicMedium = "#bf('musicMedium')")
+#set($musicMedium_c = "#bf('MusicMedium')")
+#set($musicSerialNumber = "#bf('musicSerialNumber')")
+#set($note = "#bf('note')")
+#set($note_c = "#bf('Note')")
+#set($noteType = "#bf('noteType')")
+#set($notation = "#bf('notation')")
+#set($notation_c = "#bf('Notation')")
+#set($originDate = "#bf('originDate')")
+#set($outerGRing  = "#bf('outerGRing ')")
+#set($parallelTitle_c = "#bf('ParallelTitle')")
+#set($part = "#bf('part')")
+#set($partName = "#bf('partName')")
+#set($partNumber = "#bf('partNumber')")
+#set($precededBy = "#bf('precededBy')")
+#set($preferredCitation = "#bf('preferredCitation')")
+#set($projection = "#bf('projection')")
+#set($provisionActivityStatement = "#bf('provisionActivityStatement')")
+#set($qualifier = "#bf('qualifier')")
+#set($responsibilityStatement = "#bf('responsibilityStatement')")
+#set($scale = "#bf('scale')")
+#set($shelfMarkLcc_c = "#bf('ShelfMarkLcc')")
+#set($shelfMark = "#bf('shelfMark')")
+#set($subtitle = "#bf('subtitle')")
+#set($succeededBy = "#bf('succeededBy')")
+#set($title = "#bf('title')")
+#set($title_c = "#bf('Title')")
+#set($variantTitle_c = "#bf('VariantTitle')")
+#set($variantType = "#bf('variantType')")
+#set($work_c = "#bf('Work')")
+#set($workTitle_c = "#bf('WorkTitle')")
+
+
+## per mappare le opere collegata (es. supersedes, serie, relatedTo, ecc.)			
+#macro(work_related $s $tag $subfield $record $type $kind $predicate) 
+	#set($tagValues = $xpath.many("datafield[@tag='$tag']", $record))
+	#foreach($tagValue in $tagValues) 
+		#set($value = $xpath.combine($tagValue, "$subfield"))
+		#if($function.isNotNullAndNotEmpty($value)) 
+    		#set($text = $function.escape($function.clean($value)))
+        	#set($s1 = "#uri_with_strong_normalization(${type} ${text})")
+        	$s1 $is_a $kind .         			
+        	$s1 $rdfs_label "$text" . 
+        	$s $predicate $s1 . 			
+		#end	
+	#end	
+#end	
+
+#macro (oneValueConstruct $s $_tag $subfields $type $kind $predicate $label1) 
+	#set($fieldValue = $function.escape($xpath.combine($_tag, "$subfields")))		
+	#oneValue($s $fieldValue $type $kind $predicate $label1) 	
+#end
+
+##mappa la relazione tra un nodo ed una tripla complessa, contenent un attributo
+#macro(oneValue $s $firstValue $type $kind $predicate $label1) 		
+	#if($function.isNotNullAndNotEmpty($firstValue)) 		
+		#set($text = $function.escape($firstValue))		
+    	#set($ss1 = "#uri_with_strong_normalization(${type} ${text})")		
+    	$ss1 $is_a $kind .         			
+    	$ss1 $label1 "$text" . 
+    	$s $predicate $ss1 . 			
+	#end	
+#end
+
+##mappa la relazione tra un nodo ed una tripla complessa, contenent due attributi
+#macro(twoValue $s $firstValue $type $kind $predicate $label1 $label2 $secondValue) 
+		#set($firstText = $function.escape($firstValue))
+		#set($secondText = $function.escape($secondValue))
+    	#set($s1 = "#uri_with_strong_normalization(${type} ${firstText})")
+    	$s1 $is_a $kind . 
+		#if($function.isNotNullAndNotEmpty($firstValue)) 
+			$s1 $label1 "$firstText" . 
+		#end
+		#if($function.isNotNullAndNotEmpty($secondValue)) 
+			$s1 $label2 "$secondText" . 
+		#end
+    	$s $predicate $s1 . 
+		
+#end	
+
+##mappa la relazione tra un nodo ed una tripla complessa, contenent tre attributi
+#macro(threeValue $s $firstValue $type $kind $predicate $label1 $label2 $secondValue $label3 $thirdValue) 
+		#set($firstText = $function.escape($firstValue))
+		#set($secondText = $function.escape($secondValue))
+		#set($thirdText = $function.escape($thirdValue))
+    	#set($s1 = "#uri_with_strong_normalization(${type} ${firstText})")
+    	$s1 $is_a $kind . 
+		#if($function.isNotNullAndNotEmpty($firstValue)) 
+			$s1 $label1 "$firstText" . 
+		#end
+		#if($function.isNotNullAndNotEmpty($secondValue)) 
+			##controlliamo se ci sono url tra i parametri e in caso rimuoviamo le virgolette
+			##che sono state inserite per poter passare l'url da parametro
+			#if($secondValue.contains("<http://"))
+				$s1 $label2 $secondText .
+			#else	
+				$s1 $label2 "$secondText" .
+			#end
+		#end
+		#if($function.isNotNullAndNotEmpty($thirdValue)) 			
+			$s1 $label3 "$thirdText" . 
+		#end
+    	$s $predicate $s1 .
+		
+#end	
+
+
+## mappa una relazione complessa, in cui sia necessario un blank node
+#macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))
+	#foreach($_tag in $_tags)		
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+		#end
+	#end
+#end
+
+## triples from controlfield 
+#macro(triplesWithBlankNode_cf $root $soggetto $predicato $tagForBlankNode $typeForBlankNode $blankClass $predicate1 $value1 $predicate2 $value2 $predicate3 $value3 $predicate4 $value4 $predicate5 $value5 $predicate6 $value6)
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				$s1 $predicate1 "$value1" .				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				$s1 $predicate2 "$value2" .				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				$s1 $predicate3 "$value3" .					
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				$s1 $predicate4 "$value4" .			
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				$s1 $predicate5 "$value5" .	
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				$s1 $predicate6 "$value6" .			
+			#end
+#end
+
+
+#macro(multipleClassTriples $root $subject $startingPredicate $className $startingClass $tag $startingSubfield $subfields1 $type1 $class1 $predicate1 $subfields2 $type2 $class2 $predicate2 $subfields3 $type3 $class3 $predicate3)
+	#set ($_tags = $xpath.many("datafield[@tag='$tag']", $root))
+	#foreach($_tag in $_tags)	
+		#set($blankValue = $xpath.combine($_tag, "$startingSubfield"))
+		#set($s1 = "#uri_with_strong_normalization(${className} ${blankValue})")
+		$subject $startingPredicate $s1 .
+		$s1 $is_a $startingClass .		
+		#if($function.isNotNullAndNotEmpty($predicate1))		
+			#oneValueConstruct ($s1 $_tag $subfields1 $type1 $class1 $predicate1 $rdfs_label)
+		#end
+		#if($function.isNotNullAndNotEmpty($predicate2))		
+			#oneValueConstruct ($s1 $_tag $subfields2 $type2 $class2 $predicate2 $rdfs_label)
+		#end
+		#if($function.isNotNullAndNotEmpty($predicate3))		
+			#oneValueConstruct ($s1 $_tag $subfields3 $type3 $class3 $predicate3 $rdfs_label)
+		#end
+	#end
+#end
+
+
+## genera triple con blank node con filtri da applicare ai contenuti dei sottocampi
+#macro(triplesWithBlankFilters $filters $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))
+	#foreach($_tag in $_tags)		
+		#if($function.isNotNullAndNotEmpty($subfieldForBlankNode))
+			#set($blankValue = $xpath.combineWithFilters($_tag, "$subfieldForBlankNode", $filters))
+		#else
+			#set($blankValue = $xpath.cf($_tag, $root))
+		#end
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInnerFilter($filters $s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInnerFilter($filters $s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInnerFilter($filters $s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInnerFilter($filters $s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInnerFilter($filters $s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInnerFilter($filters $s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+		#end
+	#end
+#end
+
+##per ora legge solo il secondo indicatore
+#macro(triples_blank_indicators $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $indicator2 $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode'| @ind2='$indicator2']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
+		
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate4))				
+				#oneTripleInner($s1 $predicate4 $_tag $field4 $tag4)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate5))				
+				#oneTripleInner($s1 $predicate5 $_tag $field5 $tag5)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate6))				
+				#oneTripleInner($s1 $predicate6 $_tag $field6 $tag6)				
+			#end
+		#end
+	#end
+#end
+
+
+## genera le triple in casi particolari (es isbn) in cui non ho un comportamento univoco per i tag
+## genera le triple a partire da un singolo tag 
+## accetta l'uso di filtri da applicare ai contenuti dei sottocampi, espresse nella seguente forma
+## "a:nome_funzione;b:nome_funzione"  dove a,b ecc sono i sottocampi e nome_funzione la funzione contenuta in function
+#macro (triplesWithBlankOne $filters $root $soggetto $predicato $_tag  $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
+    	#set($blankValue = $xpath.combineWithFilters($_tag, "$subfieldForBlankNode", $filters))
+    	
+    	#if($function.isNotNullAndNotEmpty($blankValue))
+    			##creo l'uri per il blank node
+    			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+    			##creo la tripla tra soggetto e blank node
+    			$soggetto $predicato $s1 .
+    			##definisco il blank node
+    			$s1 $is_a $blankClass . 
+    			##popolo il blank node
+    			#if($function.isNotNullAndNotEmpty($predicate1))				
+    				#oneTripleInnerFilter($filters $s1 $predicate1 $_tag $field1 $tag1)				
+    			#end
+    			#if($function.isNotNullAndNotEmpty($predicate2))				
+    				#oneTripleInnerFilter($filters $s1 $predicate2 $_tag $field2 $tag2)				
+    			#end
+    			#if($function.isNotNullAndNotEmpty($predicate3))			
+    				#oneTripleInnerFilter($filters $s1 $predicate3 $_tag $field3 $tag3)				
+    			#end
+    			#if($function.isNotNullAndNotEmpty($predicate4))				
+    				#oneTripleInnerFilter($filters $s1 $predicate4 $_tag $field4 $tag4)				
+    			#end
+    			#if($function.isNotNullAndNotEmpty($predicate5))				
+    				#oneTripleInnerFilter($filters $s1 $predicate5 $_tag $field5 $tag5)				
+    			#end
+    			#if($function.isNotNullAndNotEmpty($predicate6))				
+    				#oneTripleInnerFilter($filters $s1 $predicate6 $_tag $field6 $tag6)				
+				#end
+		
+	#end
+#end
+
+
+
+#macro(oneTriple $root $soggetto $tag $field $predicate)
+	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
+	#foreach($_tag in $_tags)		
+        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))
+		#if($function.isNotNullAndNotEmpty($fieldValue))			
+			$soggetto $predicate "$fieldValue" .			
+		#end
+	#end
+#end
+
+
+#macro(oneTripleFilter $filter $root $soggetto $tag $field $predicate)
+	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
+	#foreach($_tag in $_tags)		
+        #set($fieldValue = $function.escape($xpath.combineWithFilters($_tag, "$field", $filter)))
+		#if($function.isNotNullAndNotEmpty($fieldValue))			
+			$soggetto $predicate "$fieldValue" .			
+		#end
+	#end
+#end
+
+## genera una tripla applicando un filtro all'intera stringa generata (anizhè ai singoli sottocampi)
+#macro(oneTripleCleaned $root $soggetto $tag $field $predicate)
+	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
+	#foreach($_tag in $_tags)		
+        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))		
+		#if($function.isNotNullAndNotEmpty($fieldValue))		
+			#set($fieldValue = $function.fixPunctuatorMarc21($fieldValue))
+			$soggetto $predicate "$fieldValue" .			
+		#end
+	#end
+#end
+
+#macro(oneTripleWithUri $root $soggetto $tag $field $predicate $uri)
+	#set($_tags = $xpath.many("datafield[@tag='$tag']",$root))
+	#foreach($_tag in $_tags)		
+        #set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))
+		#if($function.isNotNullAndNotEmpty($fieldValue))
+			#set($fieldValue = $function.urlValidator($fieldValue))
+			##if($function.isNotNullAndNotEmpty($uri) && !"http://".contains($fieldValue) )
+			##	$soggetto $predicate $fieldValue .
+			##end			
+			
+			#set($eventualAngularParentesis = "")
+			#if(!$function.isNotNullAndNotEmpty($uri)) 				
+				#set($eventualAngularParentesis = "<")
+			#end
+			$soggetto $predicate $eventualAngularParentesis$uri$fieldValue> .	
+		#end
+	#end
+#end
+
+
+#macro(oneTripleInner $soggetto $predicate $_tag $field $tagDiscrimine)
+	#if($predicate)
+		#if($function.isNotNullAndNotEmpty($tagDiscrimine))	
+			#set($fieldValue = $function.escape($xpath.combine($_tag, "$field")))	
+			#if($function.isNotNullAndNotEmpty($fieldValue))
+				$soggetto $predicate "$fieldValue" .
+			#end
+		#else
+			#if($function.isNotNullAndNotEmpty($field))		
+    			## allora in field non ho un sottocampo, ma un campo testuale statico
+    			$soggetto $predicate "$field" .
+			#end
+		#end
+	#end		
+#end
+
+
+
+#macro(oneTripleInnerFilter $filter $soggetto $predicate $_tag $field $tagDiscrimine)
+	#if($predicate)
+		#if($function.isNotNullAndNotEmpty($tagDiscrimine))	
+			#set($fieldValue = $function.escape($xpath.combineWithFilters($_tag, "$field", $filter)))	
+			#if($function.isNotNullAndNotEmpty($fieldValue))
+				$soggetto $predicate "$fieldValue" .
+			#end
+		#else
+			#if($function.isNotNullAndNotEmpty($field))		
+    			## allora in field non ho un sottocampo, ma un campo testuale statico
+    			$soggetto $predicate "$field" .
+			#end
+		#end
+	#end		
+#end
+
+
