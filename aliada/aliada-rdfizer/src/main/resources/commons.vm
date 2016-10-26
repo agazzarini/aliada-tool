@@ -224,6 +224,7 @@
 
 ## triples from controlfield 
 #macro(triplesWithBlankNode_cf $root $soggetto $predicato $tagForBlankNode $typeForBlankNode $blankClass $predicate1 $value1 $predicate2 $value2 $predicate3 $value3 $predicate4 $value4 $predicate5 $value5 $predicate6 $value6)
+		#if($function.isNotNullAndNotEmptyMarc($value1))
 			##creo l'uri per il blank node
 			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
 			##creo la tripla tra soggetto e blank node
@@ -249,6 +250,7 @@
 			#if($function.isNotNullAndNotEmpty($predicate6))				
 				$s1 $predicate6 "$value6" .			
 			#end
+		#end
 #end
 
 

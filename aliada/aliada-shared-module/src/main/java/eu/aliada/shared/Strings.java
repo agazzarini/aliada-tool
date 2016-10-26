@@ -27,6 +27,23 @@ public abstract class Strings {
 	}
 	
 	/**
+	 * Returns true if the given string is not null, not empty and not "|||||".
+	 * 
+	 * @param value the string to check.
+	 * @return true if the given string is not null, not empty and not "|||||".
+	 */
+	public static boolean isNotNullAndNotEmptyMarc(final String value) {		
+		boolean result = value != null && value.trim().length() != 0 ;		
+		try {
+			result = result 
+					&& ((value.length()== 1  && !value.contains("|")) || (value.length() > 1 && !value.contains("||")));		
+		} catch (Exception e) {
+			// do nothing
+		}
+		return result;
+	}
+	
+	/**
 	 * Returns true if the given string is null or empty.
 	 * 
 	 * @param value the string to check.

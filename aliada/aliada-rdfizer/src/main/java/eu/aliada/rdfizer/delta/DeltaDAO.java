@@ -160,7 +160,9 @@ public class DeltaDAO {
 									rs.getString("ttl_str_txt"), 
 									rs.getString("typ_ttl") == null,
 									rs.getString("ttl_hdg_id"),
-									rs.getString("viaf_id"), null));	
+									rs.getString("viaf_id"), 
+									null,
+									null));	
 			}	
 			ps.close();
 			return cluster;

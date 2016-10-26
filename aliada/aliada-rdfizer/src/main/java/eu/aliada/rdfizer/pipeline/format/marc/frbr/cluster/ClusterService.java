@@ -151,7 +151,7 @@ public class ClusterService {
 //					"from clstr_nme_grp a join nme_ext_lnk b on a.clstr_id = b.clstr_id " +
 //					"where a.clstr_id = ?";
 						
-			final String query = "select * from clstr_nme_grp where clstr_id = ?";
+			final String query = "select a.clstr_id, a.name, a.pref_frm, a.hdg_id, b.typ_nme_id from clstr_nme_grp a join bib_nme b on a.clstr_id=b.clstr_id where a.clstr_id = ?";
 			try (final PreparedStatement statement = connection.prepareStatement(query)) {				
 				
 				statement.setInt(1, Integer.parseInt(heading));
@@ -164,14 +164,15 @@ public class ClusterService {
 						
 						String name = rs.getString("name");
 						Boolean pref_form = "t".equals(rs.getString("pref_frm"));					
-						String hdg_id = rs.getString("hdg_id");						
+						String hdg_id = rs.getString("hdg_id");
+						String name_type = rs.getString("typ_nme_id");
 						String viaf_id = null;
 						if (hdg_id.contains("http://viaf.org/viaf")){
 							viaf_id = hdg_id;
 						}						
 						
 						cluster.addEntry(
-								new ClusterEntry(name, pref_form,hdg_id, viaf_id, externalUri));
+								new ClusterEntry(name, pref_form,hdg_id, viaf_id, externalUri, name_type));
 						//System.out.println("viaf id: " + viaf_id);
 					}
 					loadTitlesBelongingToACluster(cluster, connection);
@@ -224,7 +225,9 @@ public class ClusterService {
 										rs.getString("ttl_str_txt"), 
 										rs.getString("typ_ttl") == null,
 										rs.getString("ttl_hdg_id"),
-										rs.getString("viaf_id"), null));		
+										rs.getString("viaf_id"), 
+										null, 
+										null));		
 						
 						
 					}					

@@ -106,19 +106,18 @@
 
 
 ############## fine macro ####################
-
-
-#set($people = $frbr.personIDs)
-#foreach($entry in $people.entrySet()) 
+#*
+#set($corporate = $frbr.corporateBodyIDs)
+#foreach($entry in $corporate.entrySet()) 
 	#set($tagName = $entry.getKey())
 	#set($clusters = $entry.getValue())
 	#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
 	#foreach($cluster in $clusters)
 		#set($index = $velocityCount)
 		#set($tag = $tags.get($index))
-		#set($cluster_uri = "#uri_literal('Person' $cluster.id)")
+		#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
 		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
-			$cluster_uri $is_a #bf('Person') .
+			$cluster_uri $is_a #bf('Agent') .
 			#foreach($work_id in $cluster.parents())
 				#set($work_uri = "#uri_literal('Work' $work_id)")
 				$work_uri #bf('creator') $cluster_uri . 
@@ -128,6 +127,63 @@
 			#set($firstTimeExternalLink = true)
 			#foreach($cluster_entry in $cluster.entries)	
 											
+				#if ($cluster_entry.viafId && $firstTimeViaf)
+					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .					
+					##versione alternativa per viaf in bibframe
+					## le teniamo entrambe per completezza
+					#set($firstTimeViaf = false)
+				#end
+				
+				#if ($cluster_entry.getExternalLink() && !$cluster_entry.getExternalLink().isEmpty() && $firstTimeExternalLink)
+					#foreach($uriElement in $cluster_entry.getExternalLink())
+						$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${uriElement}> .					
+					#end
+					#set($firstTimeExternalLink = false)
+				#end
+				
+				#if($cluster_entry.preferred)
+					#set($text = $function.escape($cluster_entry.heading))
+					$cluster_uri $rdfs_label "$text" . 		
+				#else
+					$cluster_uri $rdfs_label "$function.escape($cluster_entry.heading)" . 
+				#end 	
+			#end				
+			$function.markNameClusterAsProcessed($cluster)
+		#end	
+	#end 	
+#end
+*#
+
+
+#set($people = $frbr.personIDs)
+#foreach($entry in $people.entrySet()) 
+	#set($tagName = $entry.getKey())
+	#set($clusters = $entry.getValue())
+	#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
+	#foreach($cluster in $clusters)
+		#set($index = $velocityCount)
+		#set($tag = $tags.get($index))		
+		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
+			
+			#set($firstTimeViaf = true)		
+			#set($firstTimeNameType = true)
+			#set($firstTimeExternalLink = true)
+			#foreach($cluster_entry in $cluster.entries)	
+			
+				#if($cluster_entry.nameType && $firstTimeNameType)
+					##set($cluster_uri = "#uri_literal('Person' $cluster.id)")
+					#set($type = $function.mapNameType($cluster_entry.nameType))
+					#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
+					$cluster_uri $is_a #bf($type) .
+					#foreach($work_id in $cluster.parents())
+						#set($work_uri = "#uri_literal('Work' $work_id)")
+						$work_uri #bf('creator') $cluster_uri . 
+						##$cluster_uri #bf('relatedTo') $work_uri .
+					#end 	
+					#set($firstTimeNameType = false)
+				#end	
+				
+				
 				#if ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .					
 					##versione alternativa per viaf in bibframe
@@ -200,7 +256,7 @@
 		#set($text = $function.escape($function.clean($cluster.id)))
 		#set($s1 = "#uri_with_strong_normalization('local' ${text})")
 		$s1 $is_a $identifier_c .
-		$s1 $rdf_values "$cluster.id" .
+		$s1 $rdf_value "$cluster.id" .
 		$cluster_uri $identifiedBy $s1 .
 					
        
@@ -479,7 +535,7 @@ $manifestation_s $is_a $instance_c .
 #work_related($manifestation_s "777" "at" $root "issuedWith" $work_c $issuedWith)
 
 ##n.b che viene sovrascritta in caso siano presenti 246, perchè vengono gestiti come instance title pure loro
-#triplesWithBlankNode($root $manifestation_s $title "245" "a" "instanceTitle" $istanceTitle_c $rdfs_label "245" "a" $subtitle "245" "b" $partNumber "245" "n" $partName "245" "p")
+#triplesWithBlankNode($root $manifestation_s $title "245" "a" "instanceTitle" $instanceTitle_c $rdfs_label "245" "a" $subtitle "245" "b" $partNumber "245" "n" $partName "245" "p")
 
 #triples_blank_indicators($root $manifestation_s $title "246" "a" "0" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Portion of title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
 #triples_blank_indicators($root $manifestation_s $title "246" "a" "1" "parallelTitle" $parallelTitle_c $rdfs_label "246" "a" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
@@ -497,9 +553,9 @@ $manifestation_s $is_a $instance_c .
 
 #triplesWithBlankNode($root $manifestation_s $title "222" "a" "keyTitle" $keyTitle_c $rdfs_label "222" "a" $qualifier "222" "b")
 #triplesWithBlankNode($root $manifestation_s $title "210" "a" "abbreviatedTitle" $abbreviatedTitle_c $rdfs_label "210" "a" $qualifier "210" "b")
-#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "IstanceTitle" $istanceTitle_c $rdfs_label "246" "ab")
-#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "IstanceTitle" $istanceTitle_c $rdfs_label "247" "ab")
-#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "IstanceTitle" $istanceTitle_c $rdfs_label "242" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "InstanceTitle" $instanceTitle_c $rdfs_label "246" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "InstanceTitle" $instanceTitle_c $rdfs_label "247" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "InstanceTitle" $instanceTitle_c $rdfs_label "242" "ab")
 
 
 ##languageNote 
@@ -538,7 +594,7 @@ $manifestation_s $is_a $instance_c .
 
 
 ##da sistemare
-#firstIssue
+##firstIssue
 #oneTriple($root $manifestation_s "362" "a" $firstIssue)
 ##lastIssue
 #oneTriple($root $manifestation_s "362" "a" $lastIssue)
@@ -606,30 +662,31 @@ $manifestation_s $is_a $instance_c .
 
 	##formatofMusic
 #set($positionValue = $function.substringByPosition($_008, "20"))
-#if($function.isNotNullAndNotEmpty($positionValue))
+#if($function.isNotNullAndNotEmptyMarc($positionValue))
 	#triplesWithBlankNode_cf($root $manifestation_s $musicFormat "008" "MusicFormat" $musicFormat_c $rdfs_label $positionValue)
 #end
 
 	##genre
 #set($positionValue = $function.substringByPosition($_008, "24-27"))
-#if($function.isNotNullAndNotEmpty($positionValue))	
+#if($function.isNotNullAndNotEmptyMarc($positionValue))	
 	#triplesWithBlankNode_cf($root $cluster_uri $genreForm "008" "GenreForm" $genreForm_c $rdfs_label $positionValue)
 #end
 
  ## language
 #set($positionValue = $function.substringByPosition($_008, "35-37"))
-#if($function.isNotNullAndNotEmpty($positionValue))	
-	#set($lang = "#uri_with_strong_normalization('Language' ${positionValue})")
+#if($function.isNotNullAndNotEmptyMarc($positionValue))	
+	#set($lang = "#uri_with_strong_normalization('Language' ${positionValue})")	
 	$manifestation_s $language $lang .
 	$lang $is_a $language_c .
 	$lang $rdf_value "$positionValue" .
+	
 #end
 
 ##illustrationNote
 #set($positionValue = $function.substringByPosition($_008, "18-21"))
-#if($function.isNotNullAndNotEmpty($positionValue))	
+#if($function.isNotNullAndNotEmptyMarc($positionValue))	
 	##$manifestation_s $illustrationNote "$positionValue" .
-	#triplesWithBlankNode_cf($root $manifestation_s $note "008" "Note" $note_c $rdfs_label $positionValue $noteType "" "Illutration")
+	##triplesWithBlankNode_cf($root $manifestation_s $note "008" "Note" $note_c $rdfs_label $positionValue $noteType "" "Illutration")
 #end
 
 ############################################

@@ -57,6 +57,7 @@ import com.hp.hpl.jena.sparql.engine.http.Service;
 import com.hp.hpl.jena.sparql.util.Context;
 import com.hp.hpl.jena.update.UpdateExecutionFactory;
 import com.hp.hpl.jena.update.UpdateFactory;
+import com.sun.istack.FinalArrayList;
 
 import eu.aliada.rdfizer.Constants;
 import eu.aliada.rdfizer.Function;
@@ -96,8 +97,11 @@ public class Delta {
 	//constants
 	final String NAME_TYPE = "NAME";
 	final String TITLE_TYPE = "TITLE";
-	final String NAME_ENTITY = "Person";
 	final String WORK_ENTITY = "Work";
+	final String PERSON_ENTITY = "Person";	
+	final String AGENT_ENTITY = "Agent";
+	final String ORGANIZATION_ENTITY = "Organization";
+	final String MEETING_ENTITY = "Meeting";
 	
 	
 	public Delta(String rdfStore, String triplesUrl) {		
@@ -163,36 +167,44 @@ public class Delta {
 	
 	public boolean deleteSingleCluster (final String idCluster, final String type) {
 		logger.info("deleting cluster " + idCluster + " (" + type + ") ...");
-		
 		boolean result = true;
 		String sparqlEndPointUrl = configuration.getSparqlEndpointUrl();
 		
 		String entity_type = "???";
+		//if it's not person but meeting, corporate
+		
 		//mapping 
 		if (NAME_TYPE.equals(type)){
-			entity_type = NAME_ENTITY;
+			result = deleteOperations(idCluster, type, AGENT_ENTITY);			
 		}
 		else if(TITLE_TYPE.equals(type)) {
-			entity_type = WORK_ENTITY;
-		}						
-		final String clusterUri = "<" + configuration.getNamespace() + entity_type + "/" + idCluster + ">";
-		
+			result = deleteOperations(idCluster, type, WORK_ENTITY);
+		}				
+		return result;	
+	}
+	
+	
+	public boolean deleteOperations (final String idCluster, final String type, final String entity_type) {
+		boolean result = true;
+		String clusterUri = "<" + configuration.getNamespace() + entity_type + "/" + idCluster + ">";
+		String sparqlEndPointUrl = configuration.getSparqlEndpointUrl();
 		//delete triples where cluster is subject 
 		final String whereClause1 = clusterUri + " ?p ?o ";
 		result = result && callDelete(sparqlEndPointUrl, whereClause1);
-		
+				
 		//delete triples where cluster is object
 		final String whereClause2 = "?s ?p " + clusterUri;
 		result = result && callDelete(sparqlEndPointUrl, whereClause2);
-		
+				
 		if(!result){
-			logger.error("Error deleting cluster " + idCluster + " (" + type + ")");
+			logger.error("Error deleting cluster " + idCluster + " (" + type + " " + entity_type + ")");
 		}
 		else {
-			logger.info("cluster " + idCluster + " (" + type + ") deleted");
+			logger.info("cluster " + idCluster + " (" + type + " " + entity_type + ") deleted");
 		}
 		return result;
 	}
+	
 	
 	/**
 	 * update cluster
@@ -228,8 +240,8 @@ public class Delta {
 		Map<String, List<Cluster>> people = null;					
 		Map<String, List<Cluster>> works = null;
 		List<String> manifestations = null;
-		List<String> authorWorks = null;
-		String mainAuthor = null;
+		List<String> authorWorks = null;		
+		String mainAuthor = null;		
 		if (NAME_TYPE.equals(type)){
 			people = dao.getClusteredName(clusterId);
 			authorWorks = dao.getAuthorWorks(clusterId);			

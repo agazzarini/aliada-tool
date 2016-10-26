@@ -69,10 +69,53 @@
 
 
 ######### fine macro #######################
-
-##---- ANALIZZANDO --- $frbr.manifestationID  ------
-##
-##
+#*
+#set($corporate = $frbr.corporateBodyIDs)
+#foreach($entry in $corporate.entrySet()) 
+	#set($tagName = $entry.getKey())
+	#set($clusters = $entry.getValue())
+	#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
+	#foreach($cluster in $clusters)
+		#set($index = $velocityCount)
+		#set($tag = $tags.get($index))
+		#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
+		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
+			$cluster_uri $is_a #bf('Agent') .
+			#foreach($work_id in $cluster.parents())
+				#set($work_uri = "#uri_literal('Work' $work_id)")
+				$work_uri #bf('creator') $cluster_uri . 
+				##$cluster_uri #bf('relatedTo') $work_uri .
+			#end 
+			#set($firstTimeViaf = true)		
+			#set($firstTimeExternalLink = true)
+			#foreach($cluster_entry in $cluster.entries)	
+											
+				#if ($cluster_entry.viafId && $firstTimeViaf)
+					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .					
+					##versione alternativa per viaf in bibframe
+					## le teniamo entrambe per completezza
+					#set($firstTimeViaf = false)
+				#end
+				
+				#if ($cluster_entry.getExternalLink() && !$cluster_entry.getExternalLink().isEmpty() && $firstTimeExternalLink)
+					#foreach($uriElement in $cluster_entry.getExternalLink())
+						$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${uriElement}> .					
+					#end
+					#set($firstTimeExternalLink = false)
+				#end
+				
+				#if($cluster_entry.preferred)
+					#set($text = $function.escape($cluster_entry.heading))
+					$cluster_uri $rdfs_label "$text" . 		
+				#else
+					$cluster_uri $rdfs_label "$function.escape($cluster_entry.heading)" . 
+				#end 	
+			#end				
+			$function.markNameClusterAsProcessed($cluster)
+		#end	
+	#end 	
+#end
+*#
 
 #set($people = $frbr.personIDs)
 #foreach($entry in $people.entrySet()) 
@@ -81,19 +124,25 @@
 	#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
 	#foreach($cluster in $clusters)
 		#set($index = $velocityCount)
-		#set($tag = $tags.get($index))
-		#set($cluster_uri = "#uri_literal('Person' $cluster.id)")
-		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
-			$cluster_uri $is_a #bf('Person') .
-			#foreach($work_id in $cluster.parents())
-				#set($work_uri = "#uri_literal('Work' $work_id)")
-				$work_uri #bf('creator') $cluster_uri . 
-				##$cluster_uri #bf('relatedTo') $work_uri .
-			#end 
-			#set($firstTimeViaf = true)			
+		#set($tag = $tags.get($index))		
+		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))			
+			#set($firstTimeViaf = true)		
+			#set($firstTimeNameType = true)
 			#set($firstTimeExternalLink = true)
 			#foreach($cluster_entry in $cluster.entries)	
-											
+				
+				#if($cluster_entry.nameType && $firstTimeNameType)
+					#set($type = $function.mapNameType($cluster_entry.nameType))
+					#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
+					$cluster_uri $is_a #bf($type) .
+					#foreach($work_id in $cluster.parents())
+						#set($work_uri = "#uri_literal('Work' $work_id)")
+						$work_uri #bf('creator') $cluster_uri . 
+						##$cluster_uri #bf('relatedTo') $work_uri .
+					#end 
+					#set($firstTimeNameType = false)
+				#end
+				
 				#if ($cluster_entry.viafId && $firstTimeViaf)
 					##if($cluster_entry.viafId.contains("http://"))
 						$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .						
@@ -272,7 +321,7 @@
 			$s1 $is_a $genreForm_c . 
 			##popolo il blank node
 			
-			#oneTripleInnerFilter($s1 $rdfs_label $_tag "a" "105" "4-7")				
+			##oneTripleInnerFilter($s1 $rdfs_label $_tag "a" "105" "4-7")				
 						
 		#end
 	#end

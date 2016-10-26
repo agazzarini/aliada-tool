@@ -260,6 +260,16 @@ public class Function {
 		return Strings.isNotNullAndNotEmpty(value);
 	}
 	
+	/**
+	 * Returns true if the given string is not null, not empty and not "|||||".
+	 * 
+	 * @param value the string to check.
+	 * @return true if the given string is not null, not empty and not "|||||".
+	 */
+	public boolean isNotNullAndNotEmptyMarc(final String value) {
+		return Strings.isNotNullAndNotEmptyMarc(value);
+	}
+	
 	public boolean isNumber(final String value) {
 		try {
 			Integer.parseInt(value);
@@ -404,5 +414,20 @@ public class Function {
 			}
 		}
 		return result.toString();
+	}
+	
+	public String mapNameType (final String nameType) {
+		if ("1".equals(nameType)){
+			return "Person";
+		}
+		if ("2".equals(nameType)){
+			return "Organization";		
+		}
+		if ("3".equals(nameType)){
+			return "Meeting";
+		}
+		else {
+			return "Agent";
+		}
 	}
 }

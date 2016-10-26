@@ -5,6 +5,7 @@
 
 ######### fine macro #######################
 ## CLUSTER NAME
+
 #set($people = $frbr.personIDs)
 	#foreach($entry in $people.entrySet()) 
 		#set($tagName = $entry.getKey())
@@ -12,26 +13,30 @@
 		#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
 		#foreach($cluster in $clusters)
 			#set($index = $velocityCount)
-			#set($tag = $tags.get($index))
-			#set($cluster_uri = "#uri_literal('Person' $cluster.id)")
+			#set($tag = $tags.get($index))			
 			#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
-				$cluster_uri $is_a #bf('Person') .
-				#foreach($work_id in $authorWorks)
-					#set($work_uri = "#uri_literal('Work' $work_id)")
-					$work_uri #bf('creator') $cluster_uri . 
-					##$cluster_uri #bf('relatedTo') $work_uri .
-				#end 
-				#set($firstTimeViaf = true)			
+				
+				#set($firstTimeViaf = true)
+				#set($firstTimeNameType = true)
 				#set($firstTimeExternalLink = true)
 				#foreach($cluster_entry in $cluster.entries)	
-												
+					
+					#if($cluster_entry.nameType && $firstTimeNameType)
+						#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
+						$cluster_uri $is_a #bf($type) .
+						#foreach($work_id in $authorWorks)
+							#set($work_uri = "#uri_literal('Work' $work_id)")
+							$work_uri #bf('creator') $cluster_uri . 
+							##$cluster_uri #bf('relatedTo') $work_uri .
+						#end 
+						#set($firstTimeNameType = false)
+					#end
+					
 					#if ($cluster_entry.viafId && $firstTimeViaf)
 						##if($cluster_entry.viafId.contains("http://"))
-							$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .
-							$cluster_uri $referenceAuthority <${cluster_entry.viafId}> . 
+							$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .							
 						##end
-						##versione alternativa per viaf in bibframe
-						## le teniamo entrambe per completezza
+						
 						#set($firstTimeViaf = false)
 					#end
 					
@@ -44,10 +49,10 @@
 					
 					#if($cluster_entry.preferred)
 						#set($text = $function.escape($cluster_entry.heading))
-						$cluster_uri $label "$text" . 
+						$cluster_uri $rdfs_label "$text" . 
 						##$cluster_uri $authorizedAccessPoint "$text" .			
 					#else
-						$cluster_uri $label "$function.escape($cluster_entry.heading)" . 
+						$cluster_uri $rdfs_label "$function.escape($cluster_entry.heading)" . 
 					#end 	
 					
 				#end					
@@ -89,11 +94,9 @@
 			#end					
 			#set($text = $function.escape($function.clean($cluster.id)))
 			#set($s1 = "#uri_with_strong_normalization('local' ${text})")
-			$s1 $is_a $identifier_c .
-			$s1 $identifierAssigner "share-cat" .
-			$s1 $identifierScheme <http://share-cat/identifiers/works/Local> .
-			$s1 $identifierValue "$cluster.id" .
-			$cluster_uri $local $s1 .
+			$s1 $is_a $identifier_c .			
+			$s1 $rdf_value "$cluster.id" .
+			$cluster_uri $identifiedBy $s1 .
 			 
 			
 			
@@ -106,11 +109,10 @@
 			##
 			
 	        ##contentCategory		
-	        #set($s1 = "#uri_with_strong_normalization('contentCategory' ${text})")				
-	        $s1 $is_a $category_c .
-	        $s1 $categoryType "content category" .
-	        $s1 $categoryValue "Text" .
-	        $cluster_uri $contentCategory $s1 .
+	        #set($s1 = "#uri_with_strong_normalization('Content' ${text})")				
+			$s1 $is_a $content_c .     
+			$s1 $rdfs_label "Text" .
+			$cluster_uri $content $s1 .
 			##		
 	#end 			
 #end  

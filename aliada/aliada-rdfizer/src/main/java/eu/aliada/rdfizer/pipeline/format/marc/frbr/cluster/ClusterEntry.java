@@ -14,6 +14,7 @@ public final class ClusterEntry {
 	public final String id;
 	public final String viafId;	
 	public final List<String> externalLink;
+	public final String nameType;
 	
 	/**
 	 * Builds a new cluster entry.
@@ -23,12 +24,13 @@ public final class ClusterEntry {
 	 * @param id the heading identifier.
 	 * @param viafId (optional) the VIAF identifier.
 	 */
-	public ClusterEntry(final String heading, final boolean preferred, final String id, final String viafId, final List<String> externalLink) {
+	public ClusterEntry(final String heading, final boolean preferred, final String id, final String viafId, final List<String> externalLink, final String name_type) {
 		this.heading = heading;
 		this.preferred = preferred;
 		this.id = id;
 		this.viafId = viafId;
 		this.externalLink = externalLink;
+		this.nameType = name_type;
 	}
 
 	/**
@@ -75,5 +77,14 @@ public final class ClusterEntry {
 	
 	public List<String> getExternalLink() {
 		return externalLink;
+	}
+	
+	/**
+	 * returns the nameType code (for person, meeting, corporate)
+	 * 
+	 * @return the nameType code (for person, meeting, corporate)
+	 */
+	public String getNameType() {
+		return nameType;
 	}
 }

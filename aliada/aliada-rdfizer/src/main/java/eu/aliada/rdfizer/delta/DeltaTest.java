@@ -26,13 +26,13 @@ public class DeltaTest {
 		//deleteRecords(records);	
 		
 		
-		String [] clustersToDelete = {"1958;NAME", "100101;TITLE"};
+		String [] clustersToDelete = {"17469;NAME"};
 		//call to Aliada REST API
-		//deleteClusters(clustersToDelete);
+		deleteClusters(clustersToDelete);
 		
 		String [] clustersToUpdate = {"388751;NAME"};
 		//call to Aliada REST API 
-		updateClusters(clustersToUpdate);
+		//updateClusters(clustersToUpdate);
 		
 		
 		
