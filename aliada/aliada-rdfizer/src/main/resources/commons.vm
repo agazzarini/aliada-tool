@@ -42,6 +42,7 @@
 #set($descriptionLanguage = "#bf('descriptionLanguage')")
 #set($dimensions = "#bf('dimensions')")
 #set($dissertationIdentifier_c = "#bf('DissertationIdentifier')")
+#set($dissertation_c = "#bf('Dissertation')")
 #set($duration = "#bf('duration')")
 #set($editionStatement = "#bf('editionStatement')")
 #set($equinox = "#bf('equinox')")
@@ -82,6 +83,7 @@
 #set($musicMedium = "#bf('musicMedium')")
 #set($musicMedium_c = "#bf('MusicMedium')")
 #set($musicSerialNumber = "#bf('musicSerialNumber')")
+#set($musicNumber = "#bf('musicSerialNumber')")
 #set($note = "#bf('note')")
 #set($note_c = "#bf('Note')")
 #set($noteType = "#bf('noteType')")
@@ -190,8 +192,8 @@
 #macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
 	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))
 	#foreach($_tag in $_tags)		
-		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))
-		
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))		
+				
 		#if($function.isNotNullAndNotEmpty($blankValue))
 			##creo l'uri per il blank node
 			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
