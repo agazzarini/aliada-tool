@@ -98,32 +98,25 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 			Node actualNode = list.item(i);
 			NamedNodeMap attributes = actualNode.getAttributes();
 			if(attributes != null) {
-			for (int k = 0; k < attributes.getLength(); k++) {
-				Attr attr = (Attr) attributes.item(k);
-				if(attr != null)
-				{
-					String attrName = attr.getNodeName();
-					String attrValue = attr.getNodeValue();
-					if (attrName.equals(XML_ATTRIBUTE_CODE) && isAttributeValuePresent(attrValue,subfields)) {
-						attributeTextList.add(actualNode.getTextContent());
-						//builder.append(actualNode.getTextContent());
+				for (int k = 0; k < attributes.getLength(); k++) {
+					Attr attr = (Attr) attributes.item(k);
+					if(attr != null)
+					{
+						String attrName = attr.getNodeName();
+						String attrValue = attr.getNodeValue();
+						if (attrName.equals(XML_ATTRIBUTE_CODE) && isAttributeValuePresent(attrValue,subfields)) {
+							attributeTextList.add(actualNode.getTextContent());
+							//builder.append(actualNode.getTextContent());
+						}
 					}
 				}
-			}
-			}
-			
-		}
-		
-		//this fix the problem of Univerisità del Sannio. Because they have multiple $9 on 500 tag. 
-		//Only last one $9 is our cluster subfield
-		if("500".equals(tag) && !attributeTextList.isEmpty()){			
-			builder.append(findNumeric(attributeTextList));	
-		}
-		else {
-			for (String text : attributeTextList){
-				builder.append(text);
 			}			
 		}
+		
+		/* 
+		 * Find only numeric id cluster (to exclude other $9, $0 as BF8969 or "(Viaf) 52336" ) and append it
+		 */
+		builder.append(findNumeric(attributeTextList));
 		
 		return builder;
 	}

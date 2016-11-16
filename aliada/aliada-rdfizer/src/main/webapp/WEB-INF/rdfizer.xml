@@ -66,4 +66,5 @@
 
 	<import resource="pipeline-definition.xml" />
  	<import resource="unimarc-settings.xml" />
+ 	<import resource="marc-settings.xml" />
 </beans>

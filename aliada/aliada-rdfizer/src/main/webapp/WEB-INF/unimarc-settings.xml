@@ -73,7 +73,13 @@
 							</bean>	
 							<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
 								<constructor-arg value="701()0" />
-							</bean>						
+							</bean>	
+							<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
+								<constructor-arg value="710()0" />
+							</bean>	
+							<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
+								<constructor-arg value="711()0" />
+							</bean>							
 						</list>
 					</constructor-arg>
 				</bean>			
