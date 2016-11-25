@@ -53,7 +53,7 @@
 	<bean id="workDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 			<list>
-				<ref bean="work-uniform-title" />
+				<ref bean="work-uniform-title_m21" />
 			</list>
 		</constructor-arg>
 		<constructor-arg value="WORK"/>
