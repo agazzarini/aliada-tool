@@ -500,9 +500,6 @@
 	## related work
 	#work_related($cluster_uri "780" "at" $root "precededBy" $work_c $precededBy)
 	#work_related($cluster_uri "785" "at" $root "succeededBy" $work_c $succeededBy)
-
-
-	#work_related($cluster_uri "490" "av" $root "series" $work_c $series)
 	
 #end
 
@@ -649,7 +646,7 @@ $manifestation_s $is_a $instance_c .
 
 #triplesWithBlankNode($root $manifestation_s $arrangement "351" "a" "Arrangement" $arrangement_c $rdfs_label "351" "a" $hierarchicalLevel "351" "c" $part "351" "3")
 
-#oneTriple($root $manifestation_s "024" "az" $uri)
+##oneTriple($root $manifestation_s "024" "az" $uri)
 
 #triplesWithBlankNode($root $manifestation_s $note "500" "3a" "Note" $note_c $rdfs_label "500" "3a" $noteType "" "General")
 
