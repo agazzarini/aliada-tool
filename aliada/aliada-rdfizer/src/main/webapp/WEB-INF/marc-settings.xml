@@ -19,7 +19,7 @@
 					<constructor-arg value="730()9" />
 				</bean>
       	        <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
-					<constructor-arg value="996()9" />
+					<constructor-arg value="996(1-0)9" />
 				</bean>
 			</list>
 		</constructor-arg>
@@ -61,8 +61,8 @@
 	<bean id="expressionDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.ExpressionDetector"/>
 				
 	<bean id="manifestationDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.UUIDManifestationDetector">
-      <constructor-arg value="997a" />
-      <constructor-arg value="912a" />
+      <constructor-arg value="997(1-0)a" />
+      <constructor-arg value="912(1-0)a" />
 	</bean>	
 		
 	<bean id="personDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">

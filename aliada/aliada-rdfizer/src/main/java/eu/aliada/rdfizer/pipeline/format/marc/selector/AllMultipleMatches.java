@@ -12,11 +12,15 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.istack.FinalArrayList;
 /**
  * A composite expression that selects the multiple not-null evaluation of a set of expressions.
  * 
@@ -25,6 +29,10 @@ import org.w3c.dom.NodeList;
  * @param <K> the record kind.
  */
 public class AllMultipleMatches<K> implements Expression<Map<String, List<String>>, K> {
+	
+	private @Value("${customer.name}") String customerCode;
+	private @Value("${hasParenthesis}") boolean hasParenthesis;
+	
 	private final Expression<List<Node>, K> [] expressions;
 	private final static String TAG = "TAG";
 	private final static String INDICATORS = "INDICATORS";
@@ -115,12 +123,43 @@ public class AllMultipleMatches<K> implements Expression<Map<String, List<String
 		
 		/* 
 		 * Find only numeric id cluster (to exclude other $9, $0 as BF8969 or "(Viaf) 52336" ) and append it
-		 */
-		builder.append(findNumeric(attributeTextList));
+		 */		
+		
+		//builder.append(findNumeric(attributeTextList));
+		builder.append(readClusterValue(attributeTextList));
 		
 		return builder;
 	}
 	
+	/**
+	 * Some customer have cluster id preceded by parenthesis (svde-id) 34534
+	 * Others have cluster id directly (but I need to be sure it is numeric value, becouse I can find other subfield
+	 * with local information
+	 */
+	private String readClusterValue(final LinkedList<String> list){
+		if(hasParenthesis){
+			return findClusterId(list);
+		}
+		else {
+			return findNumeric(list);
+		}
+	}
+	
+	/**
+	 * read cluster id when preceded by parenthesis:  (svde-id) 5343634
+	 */
+	private String findClusterId (final LinkedList<String> list) {
+		final String parenthesisExpression = "(" + customerCode + "-id)";
+		for (String current : list) {
+			if(current != null && current.contains(parenthesisExpression)){
+				String result = current.replaceAll(Pattern.quote(parenthesisExpression), "").trim();
+				return result;
+			}
+		}
+		return "";
+	}
+	
+		
 	/**
 	 * Find the first string that match integer format
 	 * @param list

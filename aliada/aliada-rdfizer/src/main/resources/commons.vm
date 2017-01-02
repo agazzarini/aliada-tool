@@ -1,59 +1,86 @@
-#macro (bf $v)<http://bibframe.org/vocab/$v>#end 
-		
+#macro (bf $v)<http://bibframe.org/vocab/$v>#end		
 #set($manifestation_s = "#uri_literal('Instance' $frbr.manifestationID)")
-
 #set($is_a = "#rdf('type')")
 #set($rdf_value = "#rdf('value')")
 #set($rdfs_label = "<http://www.w3.org/2000/01/rdf-schema#label>")
 #set($lc_relator = "<http://id.loc.gov/vocabulary/relators>")
-
+#set($abbreviatedTitle_c = "#bf('AbbreviatedTitle')")
 #set($adminMetadata = "#bf('adminMetadata')")
 #set($adminMetadata_c = "#bf('AdminMetadata')")
 #set($agent_c = "#bf('Agent')")
 #set($agent = "#bf('agent')")
+#set($appliesTo = "#bf('appliesTo')")
+#set($appliesTo_c = "#bf('AppliesTo')")
+#set($appliedMaterial = "#bf('appliedMaterial')")
+#set($appliedMaterial_c = "#bf('AppliedMaterial')")
+#set($acquisitionSource = "#bf('acquisitionSource')")
+#set($acquisitionSource_c = "#bf('AcquisitionSource')")
+#set($acquisitionTerms = "#bf('acquisitionTerms')")
 #set($arrangement = "#bf('arrangement')")
 #set($arrangement_c = "#bf('Arrangement')")
+#set($ascensionAndDeclination = "#bf('ascensionAndDeclination')")
 #set($aspectRatio = "#bf('aspectRatio')")
 #set($aspectRatio_c = "#bf('AspectRatio')")
+#set($baseMaterial = "#bf('baseMaterial')")
+#set($baseMaterial_c = "#bf('BaseMaterial')")
+#set($bookFormat = "#bf('bookFormat')")
+#set($bookFormat_c = "#bf('BookFormat')")
 #set($carrier = "#bf('carrier')")
 #set($carrier_c = "#bf('Carrier')")
 #set($cartography = "#bf('cartography')")
 #set($cartography_c = "#bf('Cartography')")
-#set($ascensionAndDeclination = "#bf('ascensionAndDeclination')")
+#set($cartographicDataType_c = "#bf('CartographicDataType')")
+#set($cartographicObjectType_c = "#bf('CartographicObjectType')")
 #set($classification = "#bf('classification')")
 #set($classification_c = "#bf('Classification')")
 #set($classificationLcc_c = "#bf('ClassificationLcc')")
 #set($classificationDdc_c = "#bf('ClassificationDdc')")
 #set($classificationUdc_c = "#bf('ClassificationUdc')")
 #set($classificationNlm_c = "#bf('ClassificationNlm')")
+#set($code = "#bf('code')")
+#set($code_c = "#bf('Code')")
 #set($collectiveTitle_c = "#bf('CollectiveTitle')")
 #set($content_c = "#bf('Content')")
 #set($content = "#bf('content')")
 #set($contributor = "#bf('contributor')")
 #set($coordinates = "#bf('coordinates')")
+#set($count = "#bf('count')")
+#set($creatorCharacteristic = "#bf('creatorCharacteristic')")
+#set($creatorCharacteristic_c = "#bf('CreatorCharacteristic')")
 #set($credits = "#bf('credits')")
 #set($custodialHistory = "#bf('custodialHistory')")
 #set($date = "#bf('date')")
 #set($date_c = "#bf('Date')")
+#set($demographicGroup = "#bf('demographicGroup')")
+#set($demographicGroup_c = "#bf('DemographicGroup')")
 #set($descriptionAuthentication = "#bf('descriptionAuthentication')")
 #set($descriptionAuthentication_c = "#bf('DescriptionAuthentication')")
 #set($descriptionConventions = "#bf('descriptionConventions')")
 #set($descriptionConventions_c = "#bf('DescriptionConventions')")
 #set($descriptionLanguage = "#bf('descriptionLanguage')")
+#set($digitalCharacteristic = "#bf('digitalCharacteristic')")
+#set($digitalCharacteristic_c = "#bf('DigitalCharacteristic')")
 #set($dimensions = "#bf('dimensions')")
 #set($dissertationIdentifier_c = "#bf('DissertationIdentifier')")
 #set($dissertation_c = "#bf('Dissertation')")
+#set($distribution_c = "#bf('Distribution')")
 #set($duration = "#bf('duration')")
+#set($fontSize = "#bf('fontSize')")
+#set($fontSize_c = "#bf('FontSize')")
 #set($editionStatement = "#bf('editionStatement')")
+#set($encodingFormat_c = "#bf('EncodingFormat')")
 #set($equinox = "#bf('equinox')")
 #set($eventContentOf = "#bf('eventContentOf')")
 #set($event_c = "#bf('Event')")
 #set($exclusionGRing = "#bf('exclusionGRing')")
 #set($extent = "#bf('extent')")
 #set($extent_c = "#bf('Extent')")
+#set($fingerprint_c = "#bf('Fingerprint')")
 #set($firstIssue = "#bf('firstIssue')")
 #set($frequency = "#bf('frequency')")
 #set($frequency_c = "#bf('Frequency')")
+#set($generation = "#bf('generation')")
+#set($generation_c = "#bf('Generation')")
 #set($genreForm = "#bf('genreForm')")
 #set($genreForm_c = "#bf('GenreForm')")
 #set($keyTitle_c = "#bf('KeyTitle')")
@@ -63,12 +90,17 @@
 #set($identifiedBy = "#bf('identifiedBy')")
 #set($identifier_c = "#bf('Identifier')")
 #set($immediateAcquisition = "#bf('immediateAcquisition')")
+#set($immediateAcquisition_c = "#bf('ImmediateAcquisition')")
 #set($instance_c = "#bf('Instance')")
 #set($instanceTitle_c = "#bf('InstanceTitle')")
+#set($intendedAudience_c = "#bf('IntendedAudience')")
+#set($intendedAudience = "#bf('intendedAudience')")
 #set($isbn_c = "#bf('Isbn')")
 #set($issnL_c = "#bf('IssnL')")
 #set($issuedWith = "#bf('issuedWith')")
 #set($item_c = "#bf('Item')")
+#set($layout_c = "#bf('Layout')")
+#set($layout = "#bf('layout')")
 #set($language_c = "#bf('Language')")
 #set($language = "#bf('language')")
 #set($lastIssue = "#bf('lastIssue')")
@@ -77,41 +109,91 @@
 #set($mainTitle = "#bf('mainTitle')")
 #set($media = "#bf('media')")
 #set($media_c = "#bf('Media')")
+#set($mount_c = "#bf('Mount')")
+#set($mount = "#bf('mount')")
 #set($musicFormat = "#bf('musicFormat')")
 #set($musicFormat_c = "#bf('MusicFormat')")
 #set($musicKey = "#bf('musicKey')")
 #set($musicMedium = "#bf('musicMedium')")
 #set($musicMedium_c = "#bf('MusicMedium')")
-#set($musicSerialNumber = "#bf('musicSerialNumber')")
 #set($musicNumber = "#bf('musicSerialNumber')")
+#set($musicOpusNumber = "#bf('musicOpusNumber')")
+#set($musicSerialNumber = "#bf('musicSerialNumber')")
+#set($musicThematicNumber = "#bf('musicThematicNumber')")
 #set($note = "#bf('note')")
 #set($note_c = "#bf('Note')")
 #set($noteType = "#bf('noteType')")
 #set($notation = "#bf('notation')")
 #set($notation_c = "#bf('Notation')")
+#set($objectCount_c = "#bf('ObjectCount')")
 #set($originDate = "#bf('originDate')")
 #set($outerGRing  = "#bf('outerGRing ')")
+#set($organization = "#bf('organization')")
 #set($parallelTitle_c = "#bf('ParallelTitle')")
 #set($part = "#bf('part')")
 #set($partName = "#bf('partName')")
 #set($partNumber = "#bf('partNumber')")
+#set($pattern = "#bf('pattern')")
+#set($place = "#bf('place')")
+#set($place_c = "#bf('Place')")
+#set($polarity = "#bf('polarity')")
+#set($polarity_c = "#bf('Polarity')")
 #set($precededBy = "#bf('precededBy')")
 #set($preferredCitation = "#bf('preferredCitation')")
+#set($productionMethod = "#bf('productionMethod')")
+#set($productionMethod_c = "#bf('ProductionMethod')")
 #set($projection = "#bf('projection')")
+#set($provisionActivity = "#bf('provisionActivity')")
+#set($provisionActivity_c = "#bf('ProvisionActivity')")
 #set($provisionActivityStatement = "#bf('provisionActivityStatement')")
 #set($qualifier = "#bf('qualifier')")
+#set($recordingMethod_c = "#bf('RecordingMethod')")
+#set($recordingMedium_c = "#bf('RecordingMedium')")
+#set($grooveCharacteristics_c = "#bf('GrooveCharacteristics')")
+#set($trackConfig_c = "#bf('TrackConfig')")
+#set($tapeConfig_c = "#bf('TapeConfig')")
+#set($playbackChannels_c = "#bf('PlaybackChannels')")
+#set($playbackCharacteristic_c = "#bf('PlaybackCharacteristic')")
+#set($projectionCharacteristic_c = "#bf('ProjectionCharacteristic')")
+#set($projectionCharacteristic = "#bf('projectionCharacteristic')")
+#set($preservationFormat_c = "#bf('PreservationFormat')")
+#set($projectionSpeed_c = "#bf('ProjectionSpeed')")
+#set($videoCharacteristic_c = "#bf('VideoCharacteristic')")
+#set($videoCharacteristic = "#bf('videoCharacteristic')")
+#set($videoFormat_c = "#bf('VideoFormat')")
+#set($broadcastStandard_c = "#bf('BroadcastStandard')")
+#set($fileType_c = "#bf('FileType')")
+#set($encodingFormat_c = "#bf('EncodingFormat')")
+#set($fileSize_c = "#bf('FileSize')")
+#set($resolution_c = "#bf('Resolution')")
+#set($encodedBitrate_c = "#bf('EncodedBitrate')")
+#set($reductionRatio = "#bf('reductionRatio')")
+#set($reductionRatio_c = "#bf('ReductionRatio')")
+#set($playingSpeed_c = "#bf('PlayingSpeed')")
 #set($responsibilityStatement = "#bf('responsibilityStatement')")
 #set($scale = "#bf('scale')")
+#set($seriesStatement = "#bf('seriesStatement')")
 #set($shelfMarkLcc_c = "#bf('ShelfMarkLcc')")
 #set($shelfMark = "#bf('shelfMark')")
+#set($soundCharacteristic = "#bf('soundCharacteristic')")
+#set($soundCharacteristic_c = "#bf('SoundCharacteristic')")
+#set($source = "#bf('source')")
+#set($source_c = "#bf('Source')")
+#set($status = "#bf('status')")
+#set($status_c = "#bf('Status')")
+#set($stockNumber_c = "#bf('StockNumber')")
 #set($subtitle = "#bf('subtitle')")
 #set($succeededBy = "#bf('succeededBy')")
+#set($systemRequirements = "#bf('systemRequirements')")
 #set($title = "#bf('title')")
 #set($title_c = "#bf('Title')")
+#set($unit = "#bf('unit')")
 #set($variantTitle_c = "#bf('VariantTitle')")
 #set($variantType = "#bf('variantType')")
 #set($work_c = "#bf('Work')")
 #set($workTitle_c = "#bf('WorkTitle')")
+
+
 
 
 ## per mappare le opere collegata (es. supersedes, serie, relatedTo, ecc.)			
@@ -128,6 +210,34 @@
 		#end	
 	#end	
 #end	
+
+#macro (librarySourceTriple)
+	#set ($_tags = $xpath.many("datafield[@tag='997' and @ind1='1' and @ind2='0']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "a"))		
+		#set($s1 = "#uri_with_strong_normalization('AdminMetadata' ${blankValue})")
+		$manifestation_s $adminMetadata $s1 .
+		$s1 $source <${function.getSourceUrl($blankValue)}> .		
+	#end
+#end
+
+#macro (firstLastIssue $root $subject)
+	#set ($_tags = $xpath.many("datafield[@tag='362' and @ind1='0']", $root))
+	#foreach($_tag in $_tags)
+		#set($blankValue = $xpath.combine($_tag, "a"))			
+		#set($firstIssuePart = $blankValue.split("-")[0])
+		#set($lastIssuePart = $blankValue.split("-")[1])
+		#if($function.isNotNullAndNotEmpty($firstIssuePart)) 		
+			$subject $firstIssue "$firstIssuePart" .
+		#end
+		#if($function.isNotNullAndNotEmpty($lastIssuePart)) 		
+			$subject $lastIssue "$lastIssuePart" .
+		#end
+		
+	#end
+#end
+
+
 
 #macro (oneValueConstruct $s $_tag $subfields $type $kind $predicate $label1) 
 	#set($fieldValue = $function.escape($xpath.combine($_tag, "$subfields")))		
@@ -187,6 +297,40 @@
 		
 #end	
 
+##macro for subtriple creation 
+	##<resource>	bf:genreForm	[  	a  GenreForm;
+	##		rdfs:label 	“novel”;
+	##		bf:source	[rdfs:label	“content of $2”] ] ;     <--------
+#macro(subTriples $root $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $predicateForSubTriple $predicateType $subfieldForSubTriple $classForSubtriples)	
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))	
+	#foreach($_tag in $_tags)	
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))	
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##ottengo l'uri del blankNode
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			#set($fieldValue = $function.escape($xpath.combine($_tag, "$subfieldForSubTriple")))	
+			#if($function.isNotNullAndNotEmpty($fieldValue))				
+				#set($s2 = "#uri_with_strong_normalization(${predicateType} ${fieldValue})")		
+				$s1 $predicateForSubTriple $s2 .
+				#if($function.isNotNullAndNotEmpty($classForSubtriples))
+					$s2 $is_a $classForSubtriples .
+				#end
+				$s2 $rdfs_label "$fieldValue" .				
+			#end
+		#end
+	#end
+#end
+
+#macro(calculateBlankNode $root $tagForBlankNode $subfieldForBlankNode $typeForBlankNode)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode']", $root))	
+	#foreach($_tag in $_tags)	
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))	
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##ottengo l'uri del blankNode
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+		#end
+	#end
+#end
 
 ## mappa una relazione complessa, in cui sia necessario un blank node
 #macro(triplesWithBlankNode $root $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3 $predicate4 $tag4 $field4 $predicate5 $tag5 $field5 $predicate6 $tag6 $field6)
@@ -224,6 +368,33 @@
 	#end
 #end
 
+## mappa una relazione complessa, in cui sia necessario un blank node
+#macro(triplesWithBlankNodeNotInd $root $indicator $soggetto $predicato $tagForBlankNode $subfieldForBlankNode $typeForBlankNode $blankClass $predicate1 $tag1 $field1 $predicate2 $tag2 $field2 $predicate3 $tag3 $field3)
+	#set ($_tags = $xpath.many("datafield[@tag='$tagForBlankNode' and @ind1='$indicator']", $root))
+	#foreach($_tag in $_tags)			
+		#set($blankValue = $xpath.combine($_tag, "$subfieldForBlankNode"))		
+				
+		#if($function.isNotNullAndNotEmpty($blankValue))
+			##creo l'uri per il blank node
+			#set($s1 = "#uri_with_strong_normalization(${typeForBlankNode} ${blankValue})")
+			##creo la tripla tra soggetto e blank node
+			$soggetto $predicato $s1 .
+			##definisco il blank node
+			$s1 $is_a $blankClass . 
+			##popolo il blank node
+			#if($function.isNotNullAndNotEmpty($predicate1))				
+				#oneTripleInner($s1 $predicate1 $_tag $field1 $tag1)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate2))				
+				#oneTripleInner($s1 $predicate2 $_tag $field2 $tag2)				
+			#end
+			#if($function.isNotNullAndNotEmpty($predicate3))			
+				#oneTripleInner($s1 $predicate3 $_tag $field3 $tag3)				
+			#end			
+		#end
+	#end
+#end
+
 ## triples from controlfield 
 #macro(triplesWithBlankNode_cf $root $soggetto $predicato $tagForBlankNode $typeForBlankNode $blankClass $predicate1 $value1 $predicate2 $value2 $predicate3 $value3 $predicate4 $value4 $predicate5 $value5 $predicate6 $value6)
 		#if($function.isNotNullAndNotEmptyMarc($value1))
@@ -234,22 +405,22 @@
 			##definisco il blank node
 			$s1 $is_a $blankClass . 
 			##popolo il blank node
-			#if($function.isNotNullAndNotEmpty($predicate1))				
+			#if($function.isNotNullAndNotEmptyMarc($predicate1))				
 				$s1 $predicate1 "$value1" .				
 			#end
-			#if($function.isNotNullAndNotEmpty($predicate2))				
+			#if($function.isNotNullAndNotEmptyMarc($predicate2))				
 				$s1 $predicate2 "$value2" .				
 			#end
-			#if($function.isNotNullAndNotEmpty($predicate3))			
+			#if($function.isNotNullAndNotEmptyMarc($predicate3))			
 				$s1 $predicate3 "$value3" .					
 			#end
-			#if($function.isNotNullAndNotEmpty($predicate4))				
+			#if($function.isNotNullAndNotEmptyMarc($predicate4))				
 				$s1 $predicate4 "$value4" .			
 			#end
-			#if($function.isNotNullAndNotEmpty($predicate5))				
+			#if($function.isNotNullAndNotEmptyMarc($predicate5))				
 				$s1 $predicate5 "$value5" .	
 			#end
-			#if($function.isNotNullAndNotEmpty($predicate6))				
+			#if($function.isNotNullAndNotEmptyMarc($predicate6))				
 				$s1 $predicate6 "$value6" .			
 			#end
 		#end
@@ -478,5 +649,4 @@
 		#end
 	#end		
 #end
-
 

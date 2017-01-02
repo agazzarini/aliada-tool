@@ -103,57 +103,7 @@
 #end
 	
 
-
-
-############## fine macro ####################
-#*
-#set($corporate = $frbr.corporateBodyIDs)
-#foreach($entry in $corporate.entrySet()) 
-	#set($tagName = $entry.getKey())
-	#set($clusters = $entry.getValue())
-	#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
-	#foreach($cluster in $clusters)
-		#set($index = $velocityCount)
-		#set($tag = $tags.get($index))
-		#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
-		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
-			$cluster_uri $is_a #bf('Agent') .
-			#foreach($work_id in $cluster.parents())
-				#set($work_uri = "#uri_literal('Work' $work_id)")
-				$work_uri #bf('creator') $cluster_uri . 
-				##$cluster_uri #bf('relatedTo') $work_uri .
-			#end 
-			#set($firstTimeViaf = true)		
-			#set($firstTimeExternalLink = true)
-			#foreach($cluster_entry in $cluster.entries)	
-											
-				#if ($cluster_entry.viafId && $firstTimeViaf)
-					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${cluster_entry.viafId}> .					
-					##versione alternativa per viaf in bibframe
-					## le teniamo entrambe per completezza
-					#set($firstTimeViaf = false)
-				#end
-				
-				#if ($cluster_entry.getExternalLink() && !$cluster_entry.getExternalLink().isEmpty() && $firstTimeExternalLink)
-					#foreach($uriElement in $cluster_entry.getExternalLink())
-						$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <${uriElement}> .					
-					#end
-					#set($firstTimeExternalLink = false)
-				#end
-				
-				#if($cluster_entry.preferred)
-					#set($text = $function.escape($cluster_entry.heading))
-					$cluster_uri $rdfs_label "$text" . 		
-				#else
-					$cluster_uri $rdfs_label "$function.escape($cluster_entry.heading)" . 
-				#end 	
-			#end				
-			$function.markNameClusterAsProcessed($cluster)
-		#end	
-	#end 	
-#end
-*#
-
+#set($authorsArray = [])
 
 #set($people = $frbr.personIDs)
 #foreach($entry in $people.entrySet()) 
@@ -163,7 +113,7 @@
 	#foreach($cluster in $clusters)
 		#set($index = $velocityCount)
 		#set($tag = $tags.get($index))		
-		#if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
+		##if(!$function.nameClusterHasBeenAlreadyProcessed($cluster))
 			
 			#set($firstTimeViaf = true)		
 			#set($firstTimeNameType = true)
@@ -175,6 +125,7 @@
 					#set($type = $function.mapNameType($cluster_entry.nameType))
 					#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
 					$cluster_uri $is_a #bf($type) .
+					#set($bar = $authorsArray.add($cluster_uri))					
 					#foreach($work_id in $cluster.parents())
 						#set($work_uri = "#uri_literal('Work' $work_id)")
 						$work_uri #bf('creator') $cluster_uri . 
@@ -206,7 +157,7 @@
 				#end 	
 			#end				
 			$function.markNameClusterAsProcessed($cluster)
-		#end	
+		##end	
 	#end 	
 #end
 
@@ -214,6 +165,7 @@
 #foreach($entry in $works.entrySet()) 
 	#set($tagName = $entry.getKey())
 	#set($clusters = $entry.getValue())
+	## andrebbe settata anche la storia degli indicatori!
 	#set($tags = $xpath.many("datafield[@tag='${tagName}']", $root))
 	#foreach($cluster in $clusters)
 		#set($index = $velocityCount)
@@ -267,6 +219,10 @@
 #foreach($w in $frbr.flatWorkIDs)
 	#set($cluster_uri = "#uri_literal('Work' ${w.id})")	
 	
+	#foreach($authorsElement  in $authorsArray)
+		$cluster_uri #bf('creator') $authorsElement . 
+	#end
+	
 	##setAuthorizedAccessPoint($root $cluster_uri)	
 	##marc21
 	##content 
@@ -277,9 +233,30 @@
 		##set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '337' 'b' 'Category' $category_c $contentType '337' 'b' $categorySource '337' '2')")
 	##end	
 	##$triple
+	
+		##genre
+
+	
+		
 	#triplesWithBlankNode($root $cluster_uri $content '336' 'a' 'Content' $content_c $rdfs_label '336' 'a')
+	#subTriples($root "336" "a" "Content" $source "source" "2")
+	#subTriples($root "336" "a" "Content" $appliesTo "AppliesTo" "3")
+	
+	#triplesWithBlankNode($root $cluster_uri $code '336' 'b' 'Code' $code_c $rdf_value '336' 'b')
+	##subTriples($root "336" "b" "Code" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $media '337' 'a' 'Media' $media_c $rdfs_label '337' 'a')
+	#subTriples($root "337" "a" "Media" $source "source" "2")
+	#subTriples($root "337" "a" "Media" $appliesTo "AppliesTo" "3")
+	
+	#triplesWithBlankNode($root $cluster_uri $code '337' 'b' 'Code' $code_c $rdfs_label '337' 'b')
+	##subTriples($root "337" "b" "Code" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $carrier '338' 'a' 'Carrier' $carrier_c $rdfs_label '338' 'a')
+	#subTriples($root "338" "a" "Carrier" $source "source" "2")
+	
+	#triplesWithBlankNode($root $cluster_uri $code '338' 'b' 'Code' $code_c $rdfs_label '338' 'b')
+	##subTriples($root "338" "b" "Code" $source "source" "2")
 		
 	##dissertationNote
 	#triplesWithBlankNode($root $cluster_uri $note "502" "ag" "Note" $note_c $rdfs_label "502" "ag" $noteType "" "dissertation")	
@@ -296,20 +273,36 @@
 	
 	##identificativi generici
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "010" "ab" "Lccn" $lccn_c $rdf_value "010" "ab")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "015" "a" "Identifier" $identifier_c $rdf_value "015" "a")
+	#subTriples($root "015" "a" "Identifier" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "016" "a" "Identifier" $identifier_c $rdf_value "016" "a")
+	#subTriples($root "016" "a" "Identifier" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "022" "almy" "Identifier" $identifier_c $rdf_value "022" "almy")
+	#subTriples($root "022" "almy" "Identifier" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "028" "a" "Identifier" $identifier_c $rdf_value "028" "a")
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "032" "b" "Identifier" $identifier_c $rdf_value "032" "b")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "017" "a" "Identifier" $identifier_c $rdf_value "017" "a")
+	#subTriples($root "017" "a" "Identifier" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "036" "a" "Identifier" $identifier_c $rdf_value "036" "a")
-	#triplesWithBlankNode($root $cluster_uri $identifiedBy "037" "a" "Identifier" $identifier_c $rdf_value "037" "a")
+	#triplesWithBlankNode($root $cluster_uri $identifiedBy "037" "a" "StockNumber" $stockNumber_c $rdf_value "037" "a")
+	#subTriples($root "037" "a" "StockNumber" $acquisitionSource "AcquisitionSource" "b")
+	#subTriples($root "037" "a" "StockNumber" $note "Note" "n")
+	#set($blankNodeSubject = "#calculateBlankNode($root '037' 'a' 'StockNumber')")
 		
 	##triplesWithBlankNode($root $cluster_uri $isbn "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
 	##triplesWithBlankNode($root $cluster_uri $isbn10 "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
 	##triplesWithBlankNode($root $cluster_uri $isbn13 "020" "a" "identifier" $identifier_c $identifierValue "020" "az" $identifierQualifier "020" "aq" $identifierStatus "020" "z")
-	#triplesWithBlankNode($root $cluster_uri $identifiedBy "027" "a" "identifier" $identifier_c $rdf_value "027" "a")
-	#triplesWithBlankNode($root $cluster_uri $identifiedBy "024" "a" "identifier" $identifier_c $rdf_value "024" "a")
+	#triplesWithBlankNode($root $cluster_uri $identifiedBy "027" "a" "Identifier" $identifier_c $rdf_value "027" "a")
+	
+	#triplesWithBlankNode($root $cluster_uri $identifiedBy "024" "a" "Identifier" $identifier_c $rdf_value "024" "a")
+	#subTriples($root "024" "a" "Identifier" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "035" "a" "identifier" $identifier_c $rdf_value "036" "a") 
 	
 	##originDate
@@ -358,12 +351,16 @@
 	#triplesWithBlankNode($root $cluster_uri $note "522" "a" "Note" $note_c $rdfs_label "522" "a" $noteType "" "geographical coverage")
 	#triplesWithBlankNode($root $cluster_uri $note "651" "a" "Note" $note_c $rdfs_label "651" "a" $noteType "" "geographical coverage")
 	#triplesWithBlankNode($root $cluster_uri $note "662" "abcdefg" "Note" $note_c $rdfs_label "662" "abcdefg" $noteType "" "geographical coverage")
+	#subTriples($root "662" "abcdefg" "Note" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $note "662" "h" "Note" $note_c $rdfs_label "662" "h" $noteType "" "geographical coverage")
 	
 	##penso vadano in OR le seguenti condizioni
 	##temporalCoverageNote
 	#triplesWithBlankNode($root $cluster_uri $note "513" "b" "Note" $note_c $rdfs_label "513" "b" $noteType "" "temporal coverage")
 	#triplesWithBlankNode($root $cluster_uri $note "648" "a" "Note" $note_c $rdfs_label "648" "a" $noteType "" "temporal coverage")
+	#subTriples($root "648" "abcdefg" "Note" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $note "533" "m" "Note" $note_c $rdfs_label "533" "m" $noteType "" "temporal coverage")
 	
 	##event	
@@ -371,7 +368,10 @@
 	##triplesWithBlankNode($root $cluster_uri $event "033" "ao" "Event" $event_c $label "033" "a"  $eventDate "033" "a" $ventPlace "033" "p"  $ventPlace "033" "bc")
 	
 	#multipleClassTriples($root $cluster_uri $eventContentOf "Event" $event_c "518" "a" "p" 'Place' $place_c $place "d" 'Date' $date_c $date)
+	#subTriples($root "518" "a" "Event" $source "source" "2")
+	
 	#multipleClassTriples($root $cluster_uri $eventContentOf "Event" $event_c "033" "a" "p" 'Place' $place_c $place "d" 'Date' $date_c $date)
+	#subTriples($root "033" "a" "Event" $source "source" "2")
 	##penso vadano in OR le seguenti condizioni
 	
 	#triplesWithBlankNode($root $cluster_uri $classification "084" "a" "Classification" $classification_c $rdf_value "084" "a")	
@@ -383,13 +383,15 @@
 	#triplesWithBlankNode($root $cluster_uri $classification "050" "a" "Lcc" $classificationLcc_c $rdf_value "050" "a")
 	#triplesWithBlankNode($root $cluster_uri $classification "055" "a" "Lcc" $classificationLcc_c $rdf_value "055" "a")
 	#triplesWithBlankNode($root $cluster_uri $classification "052" "a" "Lcc" $classificationLcc_c $rdf_value "052" "a")
-		
+	#subTriples($root "052" "a" "Lcc" $source "source" "2")
+	
 	##classification udc
 	#triplesWithBlankNode($root $cluster_uri $classification "080" "a" "Udc" $classificationUdc_c $rdf_value "080" "a")	
 	##classification Nlm
 	#triplesWithBlankNode($root $cluster_uri $classification "060" "a" "Nlm" $classificationNlm_c $rdf_value "060" "a")
 	##classification isnnL
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "022" "m" "issnL" $issnL_c $rdf_value "022" "m")
+	#subTriples($root "022" "m" "issnL" $source "source" "2")
 	
 	#multipleClassTriples($root $manifestation_s $adminMetadata 'AdminMetadata' $adminMetadata_c "042" "a" "a" 'DescriptionAuthentication' $descriptionAuthentication_c $descriptionAuthentication)
 	
@@ -397,19 +399,52 @@
 	## dovrebbe prendere 008/24-27 posizionale
 	##dovrebbero essere in OR ?
 	##triplesWithBlankNode($root $cluster_uri $genre "008" "24-27?" "genre" $category_c $categoryValue "008" "24-27?")
+	#triplesWithBlankNode($root $cluster_uri $genreForm "380" "a" "GenreForm" $genreForm_c $rdfs_label "380" "a")
+	#subTriples($root "380" "a" "GenreForm" $source "source" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $genreForm "655" "a" "GenreForm" $genreForm_c $rdfs_label "665" "a")
+	#subTriples($root "655" "a" "GenreForm" $source "source" "2")
+	#subTriples($root "655" "a" "GenreForm" $place "place" "z")
+	#subTriples($root "655" "a" "GenreForm" $date "date" "y")
 	#triplesWithBlankNode($root $cluster_uri $genreForm "513" "a" "GenreForm" $genreForm_c $rdfs_label "513" "a")
+	#subTriples($root "513" "a" "GenreForm" $source "source" "2")
 	#triplesWithBlankNode($root $cluster_uri $genreForm "516" "a" "GenreForm" $genreForm_c $rdfs_label "516" "a")
+	#subTriples($root "516" "a" "GenreForm" $source "source" "2")
+	
+	#triplesWithBlankNode($root $cluster_uri $intendedAudience "385" "a" "IntendedAudience" $intendedAudience_c $rdfs_label "385" "a")
+	#subTriples($root "385" "a" "IntendedAudience" $code "code" "b")
+	#subTriples($root "385" "a" "IntendedAudience" $demographicGroup "code" "m" $demographicGroup_c)
+	#subTriples($root "385" "a" "IntendedAudience" $demographicGroup "code" "n" $demographicGroup_c)
+	#subTriples($root "385" "a" "IntendedAudience" $source "source" "2")
+	#subTriples($root "385" "a" "IntendedAudience" $appliesTo "AppliesTo" "3")
+	
+	#triplesWithBlankNode($root $cluster_uri $creatorCharacteristic "386" "a" "CreatorCharacteristic" $creatorCharacteristic_c $rdfs_label "386" "a")
+	#subTriples($root "386" "a" "CreatorCharacteristic" $code "code" "b")
+	#subTriples($root "386" "a" "CreatorCharacteristic" $demographicGroup "demographicGroup" "m" $demographicGroup_c)
+	#subTriples($root "386" "a" "CreatorCharacteristic" $demographicGroup "demographicGroup" "n" $demographicGroup_c)
+	#subTriples($root "386" "a" "CreatorCharacteristic" $source "source" "2")
+	#subTriples($root "386" "a" "CreatorCharacteristic" $appliesTo "AppliesTo" "3")
+	
 	
 	#oneTriple($root $cluster_uri "130" "n" $musicSerialNumber)
 	#oneTriple($root $cluster_uri "240" "n" $musicSerialNumber)
 	#oneTriple($root $cluster_uri "130" "r" $musicKey)
 	#oneTriple($root $cluster_uri "240" "r" $musicKey)
-	##oneTriple($root $cluster_uri "130" "o" $musicVersion)
-	##oneTriple($root $cluster_uri "240" "o" $musicVersion)
+	
 	##musicMediumNote
 	
-	#triplesWithBlankNode($root $cluster_uri $musicMedium "382" "adp" "MusicMedium" $musicMedium_c $rdfs_label "382" "adp")
+	#triplesWithBlankNode($root $cluster_uri $musicMedium "382" "abdp" "MusicMedium" $musicMedium_c $rdfs_label "382" "abdp" $count "382" "n" $count "382" "s")
+	#subTriples($root "382" "abdp" "MusicMedium" $status "Status" "d" $status_c)
+	#subTriples($root "382" "abdp" "MusicMedium" $source "source" "2")
+	
+	#triplesWithBlankNode($root $cluster_uri $note "382" "v" "Note" $note_c $rdfs_label "382" "v")
+	
+	#oneTriple($root $cluster_uri "383" "a" $musicSerialNumber)
+	#oneTriple($root $cluster_uri "383" "b" $musicOpusNumber)
+	#oneTriple($root $cluster_uri "383" "c" $musicThematicNumber)
+	#oneTriple($root $cluster_uri "383" "d" $musicThematicNumber)
+	#triplesWithBlankNode($root $cluster_uri $source "383" "2" "source" $source_c $rdfs_label "383" "2")
+	
 	#triplesWithBlankNode($root $cluster_uri $musicMedium "240" "m" "MusicMedium" $musicMedium_c $rdfs_label "240" "m")
 	#triplesWithBlankNode($root $cluster_uri $musicMedium "243" "m" "MusicMedium" $musicMedium_c $rdfs_label "243" "m")
 	#triplesWithBlankNode($root $cluster_uri $musicMedium "700" "m" "MusicMedium" $musicMedium_c $rdfs_label "700" "m")
@@ -428,8 +463,11 @@
 	#oneTriple($root $manifestation_s "508" "a" $credits)
 	
 	##immediateAcquisition
+	## DA CONTROLLARE AL PROSSIMO RILASCIO
+	## perchè nei documenti inviati in anteprima è stata introdotta la classe AcquisitionSource
 	#oneTriple($root $manifestation_s "541" "3abcdfhno" $immediateAcquisition)
-	#oneTriple($root $manifestation_s "37" "abcf" $immediateAcquisition)
+	##oneTriple($root $manifestation_s "037" "abcf" $immediateAcquisition)
+	
 	
 	##performerNote
 	#triplesWithBlankNode($root $manifestation_s $note "511" "a" "Note" $note_c $rdfs_label "511" "a" $noteType "" "performer")
@@ -441,9 +479,9 @@
 	#triplesWithBlankNode($root $cluster_uri $cartography "255" "d" "cartography" $cartography_c $ascensionAndDeclination "255" "d" $coordinates "255" "c" $equinox "255" "e" $exclusionGRing "255" "g" $outerGRing  "255" "f" $projection "255" "b" $scale "255" "a" )
 
 	
-	#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "VariantTitle" $variantTitle_c $rdfs_label "246" "ab")
-	#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "VariantTitle" $variantTitle_c $rdfs_label "247" "ab")
-	#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "VariantTitle" $variantTitle_c $rdfs_label "242" "ab")
+	#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "Title" $variantTitle_c $rdfs_label "246" "ab")
+	#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "Title" $variantTitle_c $rdfs_label "247" "ab")
+	#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "Title" $variantTitle_c $rdfs_label "242" "ab")
 	
 	## le seguenti coppie andranno in or?
 	#oneTriple($root $cluster_uri "130" "n" $musicNumber)
@@ -452,8 +490,6 @@
 	#oneTriple($root $cluster_uri "130" "r" $musicKey)
 	#oneTriple($root $cluster_uri "240" "r" $musicKey)
 	
-	#oneTriple($root $cluster_uri "130" "o" $musicVersion)
-	#oneTriple($root $cluster_uri "240" "o" $musicVersion)
 	
 	#triplesWithBlankNode($root $cluster_uri $note "382" "adp" "Note" $note_c $rdfs_label "382" "adp" $noteType "" "medium of performance")
 	#triplesWithBlankNode($root $cluster_uri $note "240" "m" "Note" $note_c $rdfs_label "240" "m" $noteType "" "medium of performance")
@@ -534,25 +570,26 @@ $manifestation_s $is_a $instance_c .
 ##n.b che viene sovrascritta in caso siano presenti 246, perchè vengono gestiti come instance title pure loro
 #triplesWithBlankNode($root $manifestation_s $title "245" "a" "instanceTitle" $instanceTitle_c $rdfs_label "245" "a" $subtitle "245" "b" $partNumber "245" "n" $partName "245" "p")
 
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "0" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Portion of title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "1" "parallelTitle" $parallelTitle_c $rdfs_label "246" "a" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "2" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Distintive title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "3" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Other title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p") 
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "4" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Cover title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "5" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Added title page title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "6" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Caption title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "7" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Running title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
-#triples_blank_indicators($root $manifestation_s $title "246" "a" "8" "VariantTitle" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Spine title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "0" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Portion of title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "1" "Title" $parallelTitle_c $rdfs_label "246" "a" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "2" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Distintive title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "3" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Other title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p") 
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "4" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Cover title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "5" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Added title page title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "6" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Caption title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "7" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Running title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
+#triples_blank_indicators($root $manifestation_s $title "246" "a" "8" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Spine title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
 
 
-#triplesWithBlankNode($root $manifestation_s $title "247" "a" "VariantTitle" $variantTitle_c $rdfs_label "247" "a" $variantType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partName "247" "p")
-#triplesWithBlankNode($root $manifestation_s $title "242" "a" "VariantTitle" $variantTitle_c $rdfs_label "242" "a" $variantType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partName "242" "p")
+#triplesWithBlankNode($root $manifestation_s $title "247" "a" "Title" $variantTitle_c $rdfs_label "247" "a" $variantType "" "Former Title" $subtitle "247" "b" $partNumber "247" "n" $partName "247" "p")
+#triplesWithBlankNode($root $manifestation_s $title "242" "a" "Title" $variantTitle_c $rdfs_label "242" "a" $variantType "" "Translation of title by cataloging agency" $subtitle "242" "b" $partNumber "242" "n" $partName "242" "p")
 
-#triplesWithBlankNode($root $manifestation_s $title "222" "a" "keyTitle" $keyTitle_c $rdfs_label "222" "a" $qualifier "222" "b")
-#triplesWithBlankNode($root $manifestation_s $title "210" "a" "abbreviatedTitle" $abbreviatedTitle_c $rdfs_label "210" "a" $qualifier "210" "b")
-#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "InstanceTitle" $instanceTitle_c $rdfs_label "246" "ab")
-#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "InstanceTitle" $instanceTitle_c $rdfs_label "247" "ab")
-#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "InstanceTitle" $instanceTitle_c $rdfs_label "242" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "222" "a" "Title" $keyTitle_c $rdfs_label "222" "a" $qualifier "222" "b")
+#triplesWithBlankNode($root $manifestation_s $title "210" "a" "Title" $abbreviatedTitle_c $rdfs_label "210" "a" $qualifier "210" "b")
+#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "Title" $instanceTitle_c $rdfs_label "246" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "Title" $instanceTitle_c $rdfs_label "247" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "Title" $instanceTitle_c $rdfs_label "242" "ab")
+
 
 
 ##languageNote 
@@ -573,6 +610,56 @@ $manifestation_s $is_a $instance_c .
 ##dimensions
 #oneTriple($root $manifestation_s "300" "c" $dimensions)
 #oneTriple($root $manifestation_s "340" "c" $dimensions)
+#oneTriple($root $manifestation_s "340" "i" $systemRequirements)
+
+#triplesWithBlankNode($root $manifestation_s $baseMaterial "340" "a" "BaseMaterial" $baseMaterial_c $rdfs_label "340" "a")
+#triplesWithBlankNode($root $manifestation_s $appliedMaterial "340" "c" "AppliedMaterial" $appliedMaterial_c $rdfs_label "340" "c")
+#triplesWithBlankNode($root $manifestation_s $productionMethod "340" "d" "ProductionMethod" $productionMethod_c $rdfs_label "340" "d")
+#triplesWithBlankNode($root $manifestation_s $mount "340" "e" "Mount" $mount_c $rdfs_label "340" "e")
+#triplesWithBlankNode($root $manifestation_s $reductionRation "340" "f" "ReductionRatio" $reductionRatio_c $rdfs_label "340" "f")
+#triplesWithBlankNode($root $manifestation_s $generation "340" "j" "Generation" $generation_c $rdfs_label "340" "j")
+#triplesWithBlankNode($root $manifestation_s $layout "340" "k" "Layout" $layout_c $rdfs_label "340" "k")
+#triplesWithBlankNode($root $manifestation_s $bookFormat "340" "m" "BookFormat" $bookFormat_c $rdfs_label "340" "m")
+#triplesWithBlankNode($root $manifestation_s $fontSize "340" "n" "FontSize" $fontSize_c $rdfs_label "340" "n")
+#triplesWithBlankNode($root $manifestation_s $polarity "340" "o" "Polarity" $polarity_c $rdfs_label "340" "o")
+
+
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "abcdefgh" "SoundCharacteristic" $soundCharacteristic_c $rdfs_label "344" "abcdefgh")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "a" "RecordingMethod" $recordingMethod_c $rdfs_label "344" "a")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "b" "RecordingMedium" $recordingMedium_c $rdfs_label "344" "b")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "c" "PlayingSpeed" $playingSpeed_c $rdfs_label "344" "c")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "d" "GrooveCharacteristics" $grooveCharacteristics_c $rdfs_label "344" "d")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "e" "TrackConfig" $trackConfig_c $rdfs_label "344" "e")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "f" "TapeConfig" $tapeConfig_c $rdfs_label "344" "f")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "g" "PlaybackChannels" $playbackChannels_c $rdfs_label "344" "g")
+#triplesWithBlankNode($root $manifestation_s $soundCharacteristic "344" "h" "PlaybackCharacteristic" $playbackCharacteristic_c $rdfs_label "344" "h")
+#subTriples($root "344" "abcdefgh" "SoundCharacteristic" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $projectionCharacteristic "345" "ab" "ProjectionCharacteristic" $projectionCharacteristic_c $rdfs_label "345" "ab")
+#triplesWithBlankNode($root $manifestation_s $projectionCharacteristic "345" "a" "PreservationFormats" $preservationFormat_c $rdfs_label "345" "a")
+#triplesWithBlankNode($root $manifestation_s $projectionCharacteristic "345" "b" "ProjectionSpeed" $projectionSpeed_c $rdfs_label "345" "b")
+#subTriples($root "345" "ab" "ProjectionCharacteristic" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $videoCharacteristic "346" "ab" "VideoCharacteristic" $videoCharacteristic_c $rdfs_label "346" "ab")
+#triplesWithBlankNode($root $manifestation_s $videoCharacteristic "346" "a" "VideoFormat" $videoFormat_c $rdfs_label "346" "a")
+#triplesWithBlankNode($root $manifestation_s $videoCharacteristic "346" "b" "BroadcastStandard" $broadcastStandard_c $rdfs_label "346" "b")
+#subTriples($root "346" "ab" "VideoCharacteristic" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "347" "abcdef" "DigitalCharacteristic" $digitalCharacteristic_c $rdfs_label "347" "abcdef")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "347" "a" "FileType" $fileType_c $rdfs_label "347" "a")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "347" "b" "EncodingFormat" $encodingFormat_c $rdfs_label "347" "b")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "347" "c" "FileSize" $fileSize_c $rdfs_label "347" "c")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "347" "d" "Resolution" $resolution_c $rdfs_label "347" "d")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "347" "f" "EncodedBitrate" $encodedBitrate_c $rdfs_label "347" "f")
+#subTriples($root "347" "abcdef" "DigitalCharacteristic" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $musicFormat "348" "ab" "MusicFormat" $musicFormat_c $rdfs_label "348" "a")
+#subTriples($root "348" "ab" "MusicFormat" $source "source" "2")
+#subTriples($root "348" "ab" "MusicFormat" $code "code" "b" $code_c)
+##assegnare il $2 anche dentro il code $b)
+
+#triplesWithBlankNode($root $manifestation_s $acquisitionSource "350" "ab" "AcquisitionSource" $acquisitionSource_c $rdfs_label "350" "ab" $acquisitionTerms "350" "a")
+#subTriples($root "348" "b" "AcquisitionSource" $carrier "carrier" "b")
 
 ##editionStatement
 #oneTriple($root $manifestation_s "250" "a" $editionStatement)
@@ -581,29 +668,48 @@ $manifestation_s $is_a $instance_c .
 ##oneTriple($root $manifestation_s "250" "b" $editionResponsibility)
 
 ##extent
-#triplesWithBlankNode($root $manifestation_s $extent "300" "eaf" "Extent" $extent_c $rdf_value "300" "eaf")
+#triplesWithBlankNode($root $manifestation_s $extent "300" "afg" "Extent" $extent_c $rdfs_label "300" "afg" $dimensions "300" "c" )
+#subTriples($root "300" "afg" "Extent" $unit "Unit" "f")
+#subTriples($root "300" "afg" "Extent" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $note "300" "b" "Note" $note_c  $rdfs_label "300" "b" $noteType "" "Physical details")
+#triplesWithBlankNode($root $manifestation_s $note "300" "e" "Note" $note_c  $rdfs_label "300" "e" $noteType "" "Accompanying material")
 
 ##frequency
-#triplesWithBlankNode($root $manifestation_s $frequency "310" "a" "Frequency" $frequency_c $rdf_value "310" "a")
+#triplesWithBlankNode($root $manifestation_s $frequency "310" "a" "Frequency" $frequency_c $rdfs_label "310" "a" $date "310" "b")
+#triplesWithBlankNode($root $manifestation_s $frequency "321" "a" "Frequency" $frequency_c $rdfs_label "321" "a" $date "321" "b")
 
 ##responsibilityStatement
 #oneTriple($root $manifestation_s "245" "c" $responsibilityStatement)
 
 
-##da sistemare
+
 ##firstIssue
-#oneTriple($root $manifestation_s "362" "a" $firstIssue)
-##lastIssue
-#oneTriple($root $manifestation_s "362" "a" $lastIssue)
+#firstLastIssue($root $manifestation_s)
+
+#triplesWithBlankNodeNotInd($root "1" $manifestation_s $note "362" "a" "Note" $note_c $rdfs_label "300" "a" $noteType "" "Numbering")
+
 
 ##format
 ###oneTriple($root $manifestation_s "856" "q" $format)
 ###oneTriple($root $manifestation_s "340" "abcdefhljkmno" $format)
 
 ##providerStatement
-#oneTripleCleaned($root $manifestation_s "260" "abc" $provisionActivityStatement)
-#oneTripleCleaned($root $manifestation_s "264" "abc" $provisionActivityStatement)
+## DA CONTROLLARE se ancora valide dopo le modifiche
+##oneTripleCleaned($root $manifestation_s "260" "abc" $provisionActivityStatement)
+##oneTripleCleaned($root $manifestation_s "264" "abc" $provisionActivityStatement)
 
+##
+##triplesWithBlankNode($root $manifestation_s $provisionActivity "260" "abc" "Distribution" $provisionActivity_c )
+#triplesWithBlankNode($root $manifestation_s $provisionActivity "260" "abc" "Distribution" $distribution_c )
+#subTriples($root "260" "abc" "Distibution" $agent "Agent" "b")
+#subTriples($root "260" "abc" "Distibution" $place "Place" "a")
+#subTriples($root "260" "abc" "Distibution" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $provisionActivity "264" "abc" "Distribution" $distribution_c )
+#subTriples($root "264" "abc" "Distibution" $agent "Agent" "b")
+#subTriples($root "264" "abc" "Distibution" $place "Place" "a")
+#subTriples($root "264" "abc" "Distibution" $appliesTo "AppliesTo" "3")
 ##publication  (non precisa)
 ##triplesWithBlankNode($root $manifestation_s $publication "260" "a" "provider" $provider_c $providerRole "260" "bf" $providerPlace "260" "a" $providerName "260" "b" $providerDate "260" "c")
 
@@ -636,21 +742,32 @@ $manifestation_s $is_a $instance_c .
 #triplesWithBlankNode($root $manifestation_s $note "507" "a" "Note" $note_c $rdfs_label "507" "a" $noteType "" "Graphic scale")
 
 ##aspectRatio
-#triplesWithBlankNode($root $manifestation_s $aspectRation "007" "04m" "AspectRation" $aspectRatio_c $rdfs_label "007" "04ma")
-#triplesWithBlankNode($root $manifestation_s $aspectRation "345" "a" "AspectRation" $aspectRatio_c $rdfs_label "345" "a")
+#triplesWithBlankNode($root $manifestation_s $aspectRatio "007" "04m" "AspectRation" $aspectRatio_c $rdfs_label "007" "04ma")
+#triplesWithBlankNode($root $manifestation_s $aspectRatio "345" "a" "AspectRation" $aspectRatio_c $rdfs_label "345" "a")
 
 ##duration
 #oneTriple($root $manifestation_s "306" "a" $duration)
 
 #triplesWithBlankNode($root $manifestation_s $language "041" "a" "Language" $language_c $rdfs_label "041" "a" $rdf_value "041" "2")
 
-#triplesWithBlankNode($root $manifestation_s $arrangement "351" "a" "Arrangement" $arrangement_c $rdfs_label "351" "a" $hierarchicalLevel "351" "c" $part "351" "3")
+#triplesWithBlankNode($root $manifestation_s $arrangement "351" "a" "Arrangement" $arrangement_c $rdfs_label "351" "a" $hierarchicalLevel "351" "c" $part "351" "3" $pattern "351" "b" $organization "351" "a")
+#subTriples($root "351" "a" "Arrangement" $appliesTo "AppliesTo" "3")
+
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "352" "a" "CartographicDataType" $cartographicDataType_c $rdfs_label "352" "a")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "352" "b" "CartographicObjectType" $cartographicObjectType_c $rdfs_label "352" "b")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "352" "c" "ObjectCount" $objectCount_c $rdfs_label "352" "c")
+#triplesWithBlankNode($root $manifestation_s $digitalCharacteristic "352" "q" "EncodingFormat" $encodingFormat_c $rdfs_label "352" "q")
 
 ##oneTriple($root $manifestation_s "024" "az" $uri)
 
 #triplesWithBlankNode($root $manifestation_s $note "500" "3a" "Note" $note_c $rdfs_label "500" "3a" $noteType "" "General")
+#subTriples($root "500" "3a" "Note" $appliesTo "AppliesTo" "3")
 
+#triplesWithBlankNode($root $manifestation_s $note "490" "a" "Note" $note_c $seriesStatement "490" "a" $noteType "" "General")
+#subTriples($root "490" "a" "Note" $appliesTo "AppliesTo" "3")
 
+##fingerprint
+#triplesWithBlankNode($root $manifestation_s $identifiedBy "026" "ab3d" "Fingerprint" $fingerprint_c $rdf_value "026" "ab3d")
 
 
 ######################## controlfield 008 #############################
@@ -658,16 +775,22 @@ $manifestation_s $is_a $instance_c .
 #set($_008 = $xpath.cf('008', $root))
 
 	##formatofMusic
+#*
 #set($positionValue = $function.substringByPosition($_008, "20"))
 #if($function.isNotNullAndNotEmptyMarc($positionValue))
 	#triplesWithBlankNode_cf($root $manifestation_s $musicFormat "008" "MusicFormat" $musicFormat_c $rdfs_label $positionValue)
 #end
+*#
 
+#*
 	##genre
 #set($positionValue = $function.substringByPosition($_008, "24-27"))
 #if($function.isNotNullAndNotEmptyMarc($positionValue))	
-	#triplesWithBlankNode_cf($root $cluster_uri $genreForm "008" "GenreForm" $genreForm_c $rdfs_label $positionValue)
+	#set($bookCode = $function.mapBookCode($positionValue))
+	#set($typeUrl = $function.mapBookUrl($positionValue))
+	#triplesWithBlankNode_cf($root $cluster_uri $genreForm "008" "GenreForm" $genreForm_c $rdfs_label $bookCode $is_a $typeUrl)
 #end
+*#
 
  ## language
 #set($positionValue = $function.substringByPosition($_008, "35-37"))
@@ -685,6 +808,9 @@ $manifestation_s $is_a $instance_c .
 	##$manifestation_s $illustrationNote "$positionValue" .
 	##triplesWithBlankNode_cf($root $manifestation_s $note "008" "Note" $note_c $rdfs_label $positionValue $noteType "" "Illutration")
 #end
+
+##library_source
+#librarySourceTriple
 
 ############################################
 
@@ -711,6 +837,5 @@ $manifestation_s $is_a $instance_c .
 			#else				
 				#triplesWithBlankOne("a:substringFirstSpace" $root $manifestation_s $identifiedBy $_020 "a" "identifier" $isbn_c $rdf_value "020" "a")	
 			#end
-		#end
+		#end	
 	#end
-	

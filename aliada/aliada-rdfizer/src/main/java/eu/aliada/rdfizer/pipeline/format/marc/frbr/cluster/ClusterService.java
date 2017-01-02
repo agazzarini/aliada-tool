@@ -127,7 +127,7 @@ public class ClusterService {
 	 */
 	void loadTitlesBelongingToACluster(final Cluster nameCluster, final Connection connection) throws SQLException {
 		if (nameCluster == null) { return; }
-		try (final PreparedStatement statement = connection.prepareStatement("select clstr_ttl_id from clstr_nme_ttl where clstr_nme_id = ?")) {
+		try (final PreparedStatement statement = connection.prepareStatement("select clstr_ttl_id from clstr_nme_ttl where clstr_nme_id = ? limit 20")) {
 			statement.setInt(1, nameCluster.getId());
 			try( final ResultSet rs = statement.executeQuery()) {
 				while (rs.next()) {
@@ -151,7 +151,7 @@ public class ClusterService {
 //					"from clstr_nme_grp a join nme_ext_lnk b on a.clstr_id = b.clstr_id " +
 //					"where a.clstr_id = ?";
 						
-			final String query = "select a.clstr_id, a.name, a.pref_frm, a.hdg_id, b.typ_nme_id from clstr_nme_grp a join bib_nme b on a.clstr_id=b.clstr_id where a.clstr_id = ?";
+			final String query = "select distinct a.clstr_id, a.name, a.pref_frm, a.hdg_id, b.typ_nme_id from clstr_nme_grp a join bib_nme b on a.clstr_id=b.clstr_id where a.clstr_id = ? ORDER BY pref_frm DESC limit 10";
 			try (final PreparedStatement statement = connection.prepareStatement(query)) {				
 				
 				statement.setInt(1, Integer.parseInt(heading));

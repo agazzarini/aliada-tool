@@ -7,6 +7,7 @@ package eu.aliada.shared;
 
 import java.text.Normalizer;
 import java.text.Normalizer.Form;
+import java.util.regex.Pattern;
 
 /**
  * Strings Booch utility.
@@ -32,15 +33,14 @@ public abstract class Strings {
 	 * @param value the string to check.
 	 * @return true if the given string is not null, not empty and not "|||||".
 	 */
-	public static boolean isNotNullAndNotEmptyMarc(final String value) {		
-		boolean result = value != null && value.trim().length() != 0 ;		
-		try {
-			result = result 
-					&& ((value.length()== 1  && !value.contains("|")) || (value.length() > 1 && !value.contains("||")));		
-		} catch (Exception e) {
-			// do nothing
+	public static boolean isNotNullAndNotEmptyMarc(final String value) {			
+		String pipe = Pattern.quote("|");
+		String ap = Pattern.quote("^");
+		String replaceValue = value;
+		if(replaceValue != null){
+			replaceValue = replaceValue.replaceAll(pipe, "").replaceAll(ap, "");
 		}
-		return result;
+		return replaceValue != null && replaceValue.trim().length() != 0 ;			
 	}
 	
 	/**
