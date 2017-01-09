@@ -63,6 +63,7 @@ import eu.aliada.rdfizer.datasource.rdbms.JobStats;
 import eu.aliada.rdfizer.datasource.rdbms.JobStatsRepository;
 import eu.aliada.rdfizer.datasource.rdbms.ValidationMessageRepository;
 import eu.aliada.rdfizer.delta.Delta;
+import eu.aliada.rdfizer.delta.ModsConv;
 import eu.aliada.rdfizer.log.MessageCatalog;
 import eu.aliada.rdfizer.mx.InMemoryJobResourceRegistry;
 import eu.aliada.rdfizer.mx.ManagementRegistrar;
@@ -118,7 +119,10 @@ public class RDFizerResource implements RDFizer {
 	
 	@Autowired
 	protected Delta delta;
-
+	
+	@Autowired
+	protected ModsConv mods;
+	
 	protected boolean enabled = true;
 	
 	protected AtomicInteger runningJobCount = new AtomicInteger();
@@ -135,18 +139,31 @@ public class RDFizerResource implements RDFizer {
         return "ALIADA Project (UNIMARC Fork) -- RDFizer V2.0";
     }
 	
+	
+	
+	/**
+	 * mods converter	
+	 */
+	@GET
+	@Path("/mods")
+	@Produces(MediaType.TEXT_PLAIN)
+    public String mods() {
+		mods.convert();
+        return "ok";
+    }
+	
 	/**
 	 * Delete all info connected to the record list
 	 * @param list of record in json. I.e. { "records": ["UNIBAS000037578", "UNINA000683506"] }
 	 * 
 	 */	
-	@POST
+	@GET
 	@Path("/deleteRecord")
-	@RequestMapping(value = "/deleteRecord", method = RequestMethod.POST)
+	@RequestMapping(value = "/deleteRecord", method = RequestMethod.GET)
 	@ResponseBody
-	public String deleteRecord(@RequestBody String json) {		
+	public String deleteRecord() {		
 		LOGGER.debug("deleteRecord called");		
-		boolean result = delta.deleteRecord(json);		
+		boolean result = delta.deleteRecord();		
 		if(result) {
 			return String.valueOf(HttpStatus.OK);
 		}

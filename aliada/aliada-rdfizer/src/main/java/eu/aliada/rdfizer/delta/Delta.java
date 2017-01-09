@@ -4,6 +4,8 @@ import static eu.aliada.shared.Strings.isNotNullAndNotEmpty;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -59,6 +61,7 @@ import com.hp.hpl.jena.update.UpdateExecutionFactory;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.sun.istack.FinalArrayList;
 
+import eu.aliada.rdfizer.Configurations;
 import eu.aliada.rdfizer.Constants;
 import eu.aliada.rdfizer.Function;
 import eu.aliada.rdfizer.datasource.Cache;
@@ -75,6 +78,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 
 @Component
@@ -88,6 +92,10 @@ public class Delta {
 
 	@Autowired
 	protected Function function;
+	
+	@Autowired
+	protected Configurations configurations;
+
 	
 	private final Log logger = new Log(Delta.class);	
 	final String triplesUrl;
@@ -160,6 +168,48 @@ public class Delta {
 	}
 	
 	/**
+	 * Extract list of pairs (clstr_id, clstr_type) from file
+	 */
+	
+	private List<NameValuePair> extractClusterFromFile(final String fileName, String fileType) {
+		List<NameValuePair> list = new ArrayList<>();
+		try {
+			String inputPath = configurations.getProperty(fileType) + fileName;
+			File inputFile = new File(inputPath);
+			BufferedReader br = new BufferedReader(new FileReader(inputFile)); 
+			String line;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				list.add(new NameValuePair(line.split(";")[0], line.split(";")[1]));
+			}			
+		} catch (Exception e){
+			logger.error(e.getMessage());
+		}
+		return list;		
+	}
+	
+	/**
+	 * Extract list of records Id
+	 */
+	
+	private List<String> extractRecordFromFile(final String fileName, String fileType) {
+		List<String> list = new ArrayList<String>();
+		try {
+			String inputPath = configurations.getProperty(fileType) + fileName;
+			File inputFile = new File(inputPath);
+			BufferedReader br = new BufferedReader(new FileReader(inputFile)); 
+			String line;
+			while ((line = br.readLine()) != null) {
+				// process the line.
+				list.add(line);
+			}			
+		} catch (Exception e){
+			logger.error(e.getMessage());
+		}
+		return list;		
+	}
+	
+	/**
 	 * Delete cluster
 	 * @param idCluster
 	 * @param type  NAME for cluster name, TITLE for cluster title
@@ -175,7 +225,9 @@ public class Delta {
 		
 		//mapping 
 		if (NAME_TYPE.equals(type)){
-			result = deleteOperations(idCluster, type, AGENT_ENTITY);			
+			result = deleteOperations(idCluster, type, AGENT_ENTITY);
+			//add person too because I have some old triplestore with Person triples
+			result = result && deleteOperations(idCluster, type, PERSON_ENTITY);
 		}
 		else if(TITLE_TYPE.equals(type)) {
 			result = deleteOperations(idCluster, type, WORK_ENTITY);
@@ -304,10 +356,10 @@ public class Delta {
 	}
 	
 	
-	public boolean deleteRecord(final String json) {
+	public boolean deleteRecord() {
 		boolean result =  true;
 		//extract data from json
-		List<String> recordList = extractRecordFromJson(json);
+		List<String> recordList = extractRecordFromFile("delete.txt", "record.delete.dir");
 		//delete records
 		for (String record : recordList){
 			result = result && deleteSingleRecord(record);
@@ -466,6 +518,8 @@ public class Delta {
 		  .build();
 		try {
 			Response response = client.newCall(request).execute();
+			 final ResponseBody responseBody = response.body();
+			 responseBody.close();
 			//logger.debug("response code: " + response + ", inserting cluster");
 		} catch (Exception e) {
 			logger.error(e.getMessage());
@@ -473,6 +527,8 @@ public class Delta {
 		}
 		return true;
 	}
+	
+	
 			
 
 }

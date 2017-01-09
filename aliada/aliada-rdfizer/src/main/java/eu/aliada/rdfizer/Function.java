@@ -18,11 +18,14 @@ import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.commons.beanutils.converters.BooleanArrayConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.hp.hpl.jena.sparql.util.FmtUtils;
+import com.sun.istack.FinalArrayList;
 
 import eu.aliada.rdfizer.datasource.Cache;
 import eu.aliada.rdfizer.datasource.rdbms.JobInstance;
@@ -33,6 +36,7 @@ import eu.aliada.rdfizer.pipeline.format.xml.OXPath;
 import eu.aliada.rdfizer.pipeline.nlp.NERSingletonService;
 import eu.aliada.shared.ID;
 import eu.aliada.shared.Strings;
+import eu.aliada.shared.log.Log;
 import eu.aliada.shared.rdfstore.RDFStoreDAO;
 
 /**
@@ -57,6 +61,9 @@ public class Function {
 	
 	@Autowired
 	private ClusterService clusterService;
+	
+	@Autowired
+	protected Configurations configurations;
 
 	/**
 	 * Returns the title {@link Cluster} associated with the given heading.
@@ -392,8 +399,8 @@ public class Function {
 				result = text.substring(Integer.parseInt(positions[0]), Integer.parseInt(positions[1]) + 1);
 			}			
 		}
-		catch(Exception e){
-			e.printStackTrace();
+		catch(Exception e){			
+			e.printStackTrace();			
 			return "";		
 		}		
 		return result.trim();		
@@ -429,5 +436,60 @@ public class Function {
 		else {
 			return "Agent";
 		}
+	}
+	
+	public String contractName(String phrase) {
+		StringBuilder result = new StringBuilder();
+		String [] phraseArray = phrase.split(" ");
+		if (phraseArray != null){
+			for (int i = 0; i < phraseArray.length; i++ ){
+				result.append(phraseArray[i].substring(0, 1).toUpperCase() + phraseArray[i].substring(1));
+			}
+			return result.toString();
+		}
+		else return phrase;
+	}
+	
+	public boolean isTagNameEqual(String name, Element root){
+		boolean result = false;
+		if(root != null && name != null){
+			return root.getTagName().startsWith(name);
+		}
+		return result;
+	}
+	
+	public String getSourceUrl (final String sourceCode) {		
+		return configurations.getProperty(sourceCode);
+	}
+	
+	public String mapBookCode (final String code) {
+		String cleanedCode =  code;
+		String pipe = Pattern.quote("|");
+		String ap = Pattern.quote("^");
+		cleanedCode = cleanedCode.replaceAll(pipe, "").replaceAll(ap, "");
+		return configurations.getProperty(cleanedCode + ".book.label");
+	}
+	
+	public String mapBookUrl (final String code) {
+		String cleanedCode =  code;
+		String pipe = Pattern.quote("|");
+		String ap = Pattern.quote("^");
+		cleanedCode = cleanedCode.replaceAll(pipe, "").replaceAll(ap, "");
+		return configurations.getProperty(cleanedCode + ".book.url");
+	}
+	
+	public void print(String a) {
+		System.out.println(a);
+	}
+	
+	public String[] splitFirstLastIssue (String a) {
+		String [] result = new String[2];
+		try {
+			result[0] = a.split("-")[0];
+			result[1] = a.split("-")[1];
+		} catch (Exception e) {
+			//System.out.println("splitFirstLastIssue is not completed");
+		}
+		return result;
 	}
 }

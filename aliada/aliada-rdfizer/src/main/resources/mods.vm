@@ -1,0 +1,3 @@
+#set($var = "qualcosa http://blabla")
+$uri.substring($uri.indexOf('http:'))) 
+============

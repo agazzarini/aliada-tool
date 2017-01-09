@@ -171,10 +171,12 @@
 		#set($index = $velocityCount)
 		#set($tag = $tags.get($index))
 		#set($cluster_uri = "#uri_literal('Work' $cluster.id)")
+		$manifestation_s #bf('instanceOf') $cluster_uri .
+		##$cluster_uri #bf('hasInstance') $manifestation_s .
 		#if(!$function.titleClusterHasBeenAlreadyProcessed($cluster))
 			$cluster_uri $is_a #bf('Work') . 
-			$cluster_uri #bf('hasInstance') $manifestation_s . 
-			$manifestation_s #bf('instanceOf') $cluster_uri . 
+			##$cluster_uri #bf('hasInstance') $manifestation_s . 
+			##$manifestation_s #bf('instanceOf') $cluster_uri . 
 			
 			#set($firstTimeViaf = true)
 			#foreach($cluster_entry in $cluster.entries)						
@@ -539,7 +541,22 @@
 	
 #end
 
+#oneTriple($root $cluster_uri "490" "a" $seriesStatement)
+#oneTriple($root $cluster_uri "490" "v" $seriesEnumeration)
 
+##issn 490 $x
+#set ($_tagsIssn = $xpath.many("datafield[@tag='490']", $root))
+	#foreach($_tagIssn in $_tagsIssn)
+		#set($x = $xpath.combine($_tagIssn, "x"))	
+		#if($function.isNotNullAndNotEmpty($x))
+			#set($s1x = "#uri_with_strong_normalization('Series' ${x})")
+			#set($s2x = "#uri_with_strong_normalization('Identifier' ${x})")
+			$cluster_uri $series $s1x .
+			$s1x $identifiedBy $s2x .
+			$s2x $is_a $issn_c .
+			$s2x $rdfs_label "$x" .
+		#end
+	#end
 
 
 ## INSTANCE OR WORK
@@ -569,6 +586,7 @@ $manifestation_s $is_a $instance_c .
 
 ##n.b che viene sovrascritta in caso siano presenti 246, perchè vengono gestiti come instance title pure loro
 #triplesWithBlankNode($root $manifestation_s $title "245" "a" "instanceTitle" $instanceTitle_c $rdfs_label "245" "a" $subtitle "245" "b" $partNumber "245" "n" $partName "245" "p")
+
 
 #triples_blank_indicators($root $manifestation_s $title "246" "a" "0" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Portion of title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
 #triples_blank_indicators($root $manifestation_s $title "246" "a" "1" "Title" $parallelTitle_c $rdfs_label "246" "a" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
@@ -741,6 +759,38 @@ $manifestation_s $is_a $instance_c .
 ## graphicScaleNote
 #triplesWithBlankNode($root $manifestation_s $note "507" "a" "Note" $note_c $rdfs_label "507" "a" $noteType "" "Graphic scale")
 
+##530
+#triplesWithBlankNode($root $manifestation_s $note "530" "a" "Note" $note_c $rdfs_label "530" "a")
+#oneTriple($root $manifestation_s "530" "b" $acquisitionSource)
+#oneTriple($root $manifestation_s "530" "c" $acquisitionTerms)
+#triplesWithBlankNode($root $manifestation_s $identifiedBy "530" "d" "Identifier" $stockNumber_c $rdfs_label "530" "d")
+#oneTripleWithUri($root $manifestation_s "530" "u" $electronicLocator "")
+
+##533
+#triplesWithBlankNode($root $manifestation_s $carrier '533' 'a' 'Carrier' $carrier_c $rdfs_label '533' 'a')
+#triplesWithBlankNode($root $manifestation_s $provisionActivity "533" "bcd" "Distribution" $distribution_c $date '533' 'd')
+#subTriples($root "533" "bcd" "Distibution" $agent "Agent" "c")
+#subTriples($root "533" "bcd" "Distibution" $place "Place" "b")
+#oneTriple($root $manifestation_s "533" "f" $seriesStatement)
+#triplesWithBlankNode($root $manifestation_s $note "533" "n" "Note" $note_c $rdfs_label "533" "n")
+
+##534
+#triplesWithBlankNode($root $manifestation_s $contribution '534' 'a' 'Contribution' $contribution_c $rdfs_label '534' 'a')
+#subTriples($root "534" "a" "Contribution" $agent "Agent" "a")
+#oneTriple($root $manifestation_s "534" "b" $editionStatement)
+#oneTriple($root $manifestation_s "534" "c" $provisionActivityStatement)
+#triplesWithBlankNode($root $manifestation_s $extent '534' 'e' 'Extent' $extent_c $rdfs_label '534' 'e')
+#oneTriple($root $manifestation_s "534" "f" $seriesStatement)
+#triplesWithBlankNode($root $manifestation_s $title '534' 'k' 'Title' $variantTitle_c $rdfs_label '534' 'k')
+#triplesWithBlankNode($root $manifestation_s $title '534' 'k' 'Title' $keyTitle_c $rdfs_label '534' 'k')
+#triplesWithBlankNode($root $manifestation_s $title '534' 'k' 'Title' $title_c $rdfs_label '534' 'k')
+#triplesWithBlankNode($root $manifestation_s $title '534' 't' 'Title' $istanceTitle_c $rdfs_label '534' 't')
+#triplesWithBlankNode($root $manifestation_s $note "534" "m" "Note" $note_c $rdfs_label "534" "m")
+#triplesWithBlankNode($root $manifestation_s $note "534" "n" "Note" $note_c $rdfs_label "534" "n")
+#triplesWithBlankNode($root $manifestation_s $identifiedBy "534" "x" "Identifier" $issn_c $rdfs_label "534" "x")
+#triplesWithBlankNode($root $manifestation_s $identifiedBy "534" "z" "Identifier" $isbn_c $rdfs_label "534" "z")
+
+
 ##aspectRatio
 #triplesWithBlankNode($root $manifestation_s $aspectRatio "007" "04m" "AspectRation" $aspectRatio_c $rdfs_label "007" "04ma")
 #triplesWithBlankNode($root $manifestation_s $aspectRatio "345" "a" "AspectRation" $aspectRatio_c $rdfs_label "345" "a")
@@ -763,8 +813,8 @@ $manifestation_s $is_a $instance_c .
 #triplesWithBlankNode($root $manifestation_s $note "500" "3a" "Note" $note_c $rdfs_label "500" "3a" $noteType "" "General")
 #subTriples($root "500" "3a" "Note" $appliesTo "AppliesTo" "3")
 
-#triplesWithBlankNode($root $manifestation_s $note "490" "a" "Note" $note_c $seriesStatement "490" "a" $noteType "" "General")
-#subTriples($root "490" "a" "Note" $appliesTo "AppliesTo" "3")
+##triplesWithBlankNode($root $manifestation_s $note "490" "a" "Note" $note_c $seriesStatement "490" "a" $noteType "" "General")
+##subTriples($root "490" "a" "Note" $appliesTo "AppliesTo" "3")
 
 ##fingerprint
 #triplesWithBlankNode($root $manifestation_s $identifiedBy "026" "ab3d" "Fingerprint" $fingerprint_c $rdf_value "026" "ab3d")
@@ -813,6 +863,50 @@ $manifestation_s $is_a $instance_c .
 #librarySourceTriple
 
 ############################################
+
+##510
+#set ($_tag510 = $xpath.many("datafield[@tag='510']", $root))
+	#foreach($_tag510 in $_tags510)
+		#set($_510_all = $xpath.combine($_tag510, "abcx"))	
+		#if($function.isNotNullAndNotEmpty($_510_all))
+			#set($s1_510 = "#uri_with_strong_normalization('Index' ${_510_all})")			
+			$cluster_uri $index $s1_510 .
+			
+			#set($a_510 = $xpath.combine($_tag510, "a"))	
+			#if($function.isNotNullAndNotEmpty($a_510))
+    			#set($sa_510 = "#uri_with_strong_normalization('Title' ${a_510})")	
+    			$s1_510 $title $sa_510 .
+    			$sa_510 $is_a $title_c . 
+    			$sa_510 $rdfs_label "$a_510" .
+			#end
+			
+			#set($b_510 = $xpath.combine($_tag510, "b"))	
+			#if($function.isNotNullAndNotEmpty($b_510))
+    			#set($sb_510 = "#uri_with_strong_normalization('Note' ${b_510})")	
+    			$s1_510 $note $sb_510 .
+    			$sb_510 $is_a $note_c . 
+    			$sb_510 $rdfs_label "$b_510" .
+				$sb_510 $noteType "Coverage" .
+			#end		
+			
+			#set($c_510 = $xpath.combine($_tag510, "c"))	
+			#if($function.isNotNullAndNotEmpty($c_510))
+    			#set($sc_510 = "#uri_with_strong_normalization('Note' ${c_510})")	
+    			$s1_510 $note $sc_510 .
+    			$sc_510 $is_a $note_c . 
+    			$sc_510 $rdfs_label "$c_510" .
+				$sc_510 $noteType "Location" .
+			#end	
+			
+			#set($x_510 = $xpath.combine($_tag510, "x"))	
+			#if($function.isNotNullAndNotEmpty($x_510))
+    			#set($sx_510 = "#uri_with_strong_normalization('Identifier' ${x_510})")	
+    			$s1_510 $identifiedBy $sx_510 .
+    			$sx_510 $is_a $issn_c . 
+    			$sx_510 $rdfs_label "$x_510" .				
+			#end			
+		#end
+	#end
 
 	
 ##Item
