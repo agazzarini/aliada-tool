@@ -5,7 +5,7 @@
 		type="javax.sql.DataSource"
 		username="aliada" password="aliada01"
 		driverClassName="com.mysql.jdbc.Driver"
-		url="jdbc:postgresql://192.168.0.159:5432/aliada_svl"
+		url="jdbc:postgresql://dev-vde.atcult.it:54321/aliada_svl"
 		maxActive="5"
 		maxIdle="5"/>
     
@@ -15,7 +15,7 @@
 		type="javax.sql.DataSource"
 		username="ldcat" password="ldcat01"
 		driverClassName="org.postgresql.Driver"
-		url="jdbc:postgresql://192.168.0.159:5432/sharecat_svl"
+		url="jdbc:postgresql://dev-vde.atcult.it:54321/sharevde_test"
 		maxActive="10"
 		maxIdle="10"/>    
 </Context>

@@ -18,14 +18,12 @@ import java.util.regex.Pattern;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.commons.beanutils.converters.BooleanArrayConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import com.hp.hpl.jena.sparql.util.FmtUtils;
-import com.sun.istack.FinalArrayList;
 
 import eu.aliada.rdfizer.datasource.Cache;
 import eu.aliada.rdfizer.datasource.rdbms.JobInstance;
@@ -36,7 +34,6 @@ import eu.aliada.rdfizer.pipeline.format.xml.OXPath;
 import eu.aliada.rdfizer.pipeline.nlp.NERSingletonService;
 import eu.aliada.shared.ID;
 import eu.aliada.shared.Strings;
-import eu.aliada.shared.log.Log;
 import eu.aliada.shared.rdfstore.RDFStoreDAO;
 
 /**

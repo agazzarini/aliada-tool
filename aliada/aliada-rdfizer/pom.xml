@@ -16,18 +16,19 @@
 		<module.listen.port>8891</module.listen.port>
 		<spring-framework.version>3.2.9.RELEASE</spring-framework.version>
 		<camel.version>2.13.1</camel.version>
-	</properties>	  
-	<repositories>	  	 
-	 	<repository> 
-			<id>nxparser-repo</id> 
-			<url>http://nxparser.googlecode.com/svn/repository</url>			
-	 	</repository>	 	
-		<repository>		
-			<id>bigdata.releases</id>
-			<url>http://www.systap.com/maven/releases</url>
-		</repository>			
-	</repositories>	
+	</properties>
+	<repositories>
+		<!-- <repository> -->
+		<!-- <id>nxparser-repo</id> -->
+		<!-- <url>http://nxparser.googlecode.com/svn/repository</url> -->
+		<!-- </repository> -->
+	</repositories>
 	<dependencies>
+	<dependency>
+		<groupId>org.json</groupId>
+		<artifactId>json</artifactId>
+		<version>20160212</version>
+	</dependency>	
 		<!-- Spring -->
 		<dependency>
 			<groupId>xml-apis</groupId>
@@ -101,9 +102,9 @@
 			<version>4.2.0.Final</version>
 		</dependency>
 		<dependency>
- 			<groupId>com.squareup.okhttp3</groupId>
-  			<artifactId>okhttp</artifactId>
- 			 <version>3.4.1</version>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>3.4.1</version>
 		</dependency>
 		<!-- TESTING -->
 		<dependency>
@@ -116,23 +117,23 @@
 			<groupId>org.glassfish.jersey.ext</groupId>
 			<artifactId>jersey-spring3</artifactId>
 			<version>${jersey.version}</version>
-		</dependency>				 		
-		<dependency> 
-			<groupId>org.semanticweb.yars</groupId> 
-			<artifactId>nxparser</artifactId> 
-			<version>1.2.3</version> 
-			<scope>provided</scope>
-		 </dependency> 		
-		 		<dependency>
+		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.semanticweb.yars</groupId> -->
+		<!-- <artifactId>nxparser</artifactId> -->
+		<!-- <version>1.2.3</version> -->
+		<!-- <scope>provided</scope> -->
+		<!-- </dependency> -->
+		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
 			<version>2.11.2</version>
-		</dependency> 
-		   <dependency> 
-		  	<groupId>com.googlecode.concurrentlinkedhashmap</groupId> 
-		  <artifactId>concurrentlinkedhashmap-lru</artifactId> 
-		 	<version>1.4</version> 
-		   </dependency> 
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+			<artifactId>concurrentlinkedhashmap-lru</artifactId>
+			<version>1.4</version>
+		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
@@ -145,25 +146,25 @@
 			<version>3.5.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.bigdata</groupId>
-			<artifactId>bigdata</artifactId>
-			<version>1.5.3</version>
+			<groupId>com.blazegraph</groupId>
+			<artifactId>bigdata-core</artifactId>
+			<version>2.0.0</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>javax.servlet-api</artifactId>
 					<groupId>javax.servlet</groupId>
 				</exclusion>
-			</exclusions>			
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-client</artifactId>
 			<version>9.3.4.RC1</version>
-		</dependency>		
+		</dependency>
 		<dependency>
-    <groupId>org.apache.httpcomponents</groupId>
-    <artifactId>httpclient</artifactId>
-    <version>4.5.1</version>
-</dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.1</version>
+		</dependency>
 	</dependencies>
 </project>

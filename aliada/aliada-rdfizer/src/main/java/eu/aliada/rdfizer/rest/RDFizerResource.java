@@ -5,7 +5,7 @@
 // Responsible: ALIADA Consortiums
 package eu.aliada.rdfizer.rest;
 
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardCopyOption.*;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -30,7 +30,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -45,16 +44,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.codahale.metrics.EWMA;
 
 import eu.aliada.rdfizer.datasource.Cache;
 import eu.aliada.rdfizer.datasource.rdbms.JobInstance;
@@ -396,7 +391,7 @@ public class RDFizerResource implements RDFizer {
 				LOGGER.error(MessageCatalog._00045_MX_JOB_RESOURCE_REGISTRATION_FAILED, exception, configuration.getId());
 			}
 			
-			Files.move(source, target, REPLACE_EXISTING);
+			Files.move(source, target, REPLACE_EXISTING, ATOMIC_MOVE);
 
 			configuration.setStartDate(new Timestamp(System.currentTimeMillis()));
 			jobInstanceRepository.save(configuration);
