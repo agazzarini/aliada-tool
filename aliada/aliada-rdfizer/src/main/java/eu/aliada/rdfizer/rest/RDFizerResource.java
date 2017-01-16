@@ -357,6 +357,7 @@ public class RDFizerResource implements RDFizer {
 		}
 		
 		String path = null;
+		JobResource newJobResource = null;
 		try {
 			final JobInstance configuration = cache.getJobInstance(id);
 			if (configuration == null) {
@@ -381,29 +382,51 @@ public class RDFizerResource implements RDFizer {
 						
 			final java.nio.file.Path source = Paths.get(path);
 			final java.nio.file.Path target = Paths.get(listenPath + "/" + rdfizerDataFilename(datafile, id));
-			
-			try {
-				final JobResource newJobResource = new JobResource(configuration);
-				newJobResource.setRunning(true);
-				ManagementRegistrar.registerJob(newJobResource);
-				jobRegistry.addJobResource(newJobResource);
-			} catch (JMException exception) {
-				LOGGER.error(MessageCatalog._00045_MX_JOB_RESOURCE_REGISTRATION_FAILED, exception, configuration.getId());
-			}
-			
+			newJobResource = new JobResource(configuration);
+			newJobResource.setRunning(true);
+			ManagementRegistrar.registerJob(newJobResource);
+			jobRegistry.addJobResource(newJobResource);
+						
 			Files.move(source, target, REPLACE_EXISTING, ATOMIC_MOVE);
 
 			configuration.setStartDate(new Timestamp(System.currentTimeMillis()));
 			jobInstanceRepository.save(configuration);
 			runningJobCount.incrementAndGet();
+			
 			return Response.created(uriInfo.getAbsolutePathBuilder().build()).build();
+		} catch (JMException exception) {
+			cleanUp(newJobResource, id);
+			LOGGER.error(MessageCatalog._00045_MX_JOB_RESOURCE_REGISTRATION_FAILED, exception, id);
+			return Response.serverError().build();	
 		} catch (final IOException exception) {
+			cleanUp(newJobResource, id);
 			LOGGER.error(MessageCatalog._00051_IO_FAILURE, exception);
 			return Response.serverError().build();						
 		} catch (final DataAccessException exception)  {
 			LOGGER.error(MessageCatalog._00031_DATA_ACCESS_FAILURE, exception);
+			cleanUp(newJobResource, id);
+			return Response.serverError().build();						
+		} catch (final Exception exception)  {
+			LOGGER.error(MessageCatalog._00034_NWS_SYSTEM_INTERNAL_FAILURE, exception);
+			cleanUp(newJobResource, id);
 			return Response.serverError().build();						
 		}
+	}
+	
+	/**
+	 * Cleans up the runtime job definition within the system.
+	 * 
+	 * @param resource the {@link JobResource} (the job definition).
+	 * @param id the job id. Although it is included in the preceeding instance, this is used because that could be null.
+	 */
+	private void cleanUp(final JobResource resource, final Integer id) {
+		try {
+			ManagementRegistrar.registerJob(resource);
+		} catch (final JMException exception) {
+			// Ignore
+		}
+
+		jobRegistry.removeJob(id);
 	}
 	
 	/**

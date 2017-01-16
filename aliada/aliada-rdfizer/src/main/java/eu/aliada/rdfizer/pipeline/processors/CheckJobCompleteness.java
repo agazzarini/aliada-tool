@@ -8,6 +8,8 @@ package eu.aliada.rdfizer.pipeline.processors;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import javax.management.JMException;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.beans.factory.annotation.Autowired;

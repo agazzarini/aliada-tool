@@ -17,12 +17,6 @@
 		<spring-framework.version>3.2.9.RELEASE</spring-framework.version>
 		<camel.version>2.13.1</camel.version>
 	</properties>
-	<repositories>
-		<!-- <repository> -->
-		<!-- <id>nxparser-repo</id> -->
-		<!-- <url>http://nxparser.googlecode.com/svn/repository</url> -->
-		<!-- </repository> -->
-	</repositories>
 	<dependencies>
 	<dependency>
 		<groupId>org.json</groupId>
@@ -118,12 +112,6 @@
 			<artifactId>jersey-spring3</artifactId>
 			<version>${jersey.version}</version>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>org.semanticweb.yars</groupId> -->
-		<!-- <artifactId>nxparser</artifactId> -->
-		<!-- <version>1.2.3</version> -->
-		<!-- <scope>provided</scope> -->
-		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
@@ -147,7 +135,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.blazegraph</groupId>
-			<artifactId>bigdata-core</artifactId>
+			<artifactId>bigdata-client</artifactId>
 			<version>2.0.0</version>
 			<exclusions>
 				<exclusion>
@@ -155,16 +143,6 @@
 					<groupId>javax.servlet</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-client</artifactId>
-			<version>9.3.4.RC1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.1</version>
 		</dependency>
 	</dependencies>
 </project>

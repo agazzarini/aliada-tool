@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.management.JMException;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.Processor;
@@ -24,9 +26,12 @@ import eu.aliada.rdfizer.Function;
 import eu.aliada.rdfizer.datasource.Cache;
 import eu.aliada.rdfizer.datasource.rdbms.JobInstance;
 import eu.aliada.rdfizer.log.MessageCatalog;
+import eu.aliada.rdfizer.mx.InMemoryJobResourceRegistry;
+import eu.aliada.rdfizer.mx.ManagementRegistrar;
 import eu.aliada.rdfizer.pipeline.format.marc.frbr.cluster.Cluster;
 import eu.aliada.rdfizer.pipeline.format.marc.frbr.model.FrbrDocument;
 import eu.aliada.rdfizer.pipeline.format.xml.NullObject;
+import eu.aliada.rdfizer.rest.JobResource;
 import eu.aliada.shared.log.Log;
 
 /**
@@ -82,6 +87,9 @@ public class FrbrEntitiesDetector implements Processor {
 	MultiMapEntityDetector placeDetector;
 	
 	@Autowired
+	protected InMemoryJobResourceRegistry jobRegistry;
+	
+	@Autowired
 	private Function function;
 	
 	@Autowired
@@ -90,20 +98,45 @@ public class FrbrEntitiesDetector implements Processor {
 	@Override
 	public void process(final Exchange exchange) throws Exception {
 		final Message in = exchange.getIn();
-		final Integer jobId = in.getHeader(Constants.JOB_ID_ATTRIBUTE_NAME, Integer.class);
-		final JobInstance configuration = cache.getJobInstance(jobId);
-		if (configuration == null) {
+		final Integer jobId = in.getHeader(Constants.JOB_ID_ATTRIBUTE_NAME, Integer.class);			
+		try {
+			final JobInstance configuration = cache.getJobInstance(jobId);
+			if (configuration == null) {
+				log.error(MessageCatalog._00038_UNKNOWN_JOB_ID, jobId);
+				cleanUp(jobId);
+				throw new IllegalArgumentException(String.valueOf(jobId));
+			}
+	
+			final FrbrDocument entitiesDocument = frbrDetection(exchange.getIn().getBody(Document.class));
+			if (isValid(entitiesDocument)) {
+				in.setBody(entitiesDocument);
+			} else {
+				log.debug(MessageCatalog._00041_FRBR_ENTITY_DETECTION_FAILED);
+				in.setBody(NullObject.instance);
+			}
+		} catch (final IllegalArgumentException exception) {
+			throw exception;
+		} catch (final Exception exception) {
 			log.error(MessageCatalog._00038_UNKNOWN_JOB_ID, jobId);
+			cleanUp(jobId);
 			throw new IllegalArgumentException(String.valueOf(jobId));
 		}
-
-		final FrbrDocument entitiesDocument = frbrDetection(exchange.getIn().getBody(Document.class));
-		if (isValid(entitiesDocument)) {
-			in.setBody(entitiesDocument);
-		} else {
-			log.debug(MessageCatalog._00041_FRBR_ENTITY_DETECTION_FAILED);
-			in.setBody(NullObject.instance);
+	}
+	
+	/**
+	 * Cleans up the runtime job definition within the system.
+	 * 
+	 * @param resource the {@link JobResource} (the job definition).
+	 * @param id the job id. Although it is included in the preceeding instance, this is used because that could be null.
+	 */
+	private void cleanUp(final Integer id) {
+		try {
+			ManagementRegistrar.registerJob(jobRegistry.getJobResource(id));
+		} catch (final JMException exception) {
+			// Ignore
 		}
+
+		jobRegistry.removeJob(id);
 	}
 
 	/**
