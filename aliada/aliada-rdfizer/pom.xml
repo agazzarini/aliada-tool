@@ -144,7 +144,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- Use if Tinkerpop 2.5 support is needed ; See also Tinkerpop3 below. -->
 		<dependency>
 			<groupId>com.blazegraph</groupId>
 			<artifactId>bigdata-blueprints</artifactId>
@@ -156,16 +155,5 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- <dependency> -->
-		<!-- <groupId>com.blazegraph</groupId> -->
-		<!-- <artifactId>bigdata-client</artifactId> -->
-		<!-- <version>2.0.0</version> -->
-		<!-- <exclusions> -->
-		<!-- <exclusion> -->
-		<!-- <artifactId>javax.servlet-api</artifactId> -->
-		<!-- <groupId>javax.servlet</groupId> -->
-		<!-- </exclusion> -->
-		<!-- </exclusions> -->
-		<!-- </dependency> -->
 	</dependencies>
 </project>
