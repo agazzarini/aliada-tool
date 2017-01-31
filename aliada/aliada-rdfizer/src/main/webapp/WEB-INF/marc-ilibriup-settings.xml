@@ -6,7 +6,7 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
        
-    <bean id="work-uniform-title" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
+    <bean id="work-uniform-title_m21" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
 		<constructor-arg>
 	      	<list>
       	        <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">

@@ -19,12 +19,12 @@
 					<constructor-arg value="730()9" />
 				</bean>
       	        <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
-					<constructor-arg value="996(1-0)9" />
+					<constructor-arg value="996()9" />
 				</bean>
 			</list>
 		</constructor-arg>
 	</bean>
-	<bean id="item-identifier_m21" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
+	<bean id="item-identifier" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
 		<constructor-arg>
 			<list>
 				<bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.xml.MultipleVariableFieldExpression">
@@ -33,39 +33,39 @@
 			</list>
 		</constructor-arg>
 	</bean>
-	<bean id="concept-term_m21" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
+	<bean id="concept-term" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
 		<constructor-arg>
 			<list/>
 		</constructor-arg>
 	</bean>
 
-	<bean id="event-term_m21"
+	<bean id="event-term"
 		class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
 		<constructor-arg>
 			<list/>
 		</constructor-arg>
 	</bean>
-	<bean id="place-term_m21" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
+	<bean id="place-term" class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
 		<constructor-arg>
 			<list />
 		</constructor-arg>
 	</bean>
-	<bean id="workDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="workDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 			<list>
-				<ref bean="work-uniform-title_m21" />
+				<ref bean="work-uniform-title" />
 			</list>
 		</constructor-arg>
 		<constructor-arg value="WORK"/>
 	</bean>
-	<bean id="expressionDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.ExpressionDetector"/>
+	<bean id="expressionDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.ExpressionDetector"/>
 				
-	<bean id="manifestationDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.UUIDManifestationDetector">
-      <constructor-arg value="997(1-0)a" />
-      <constructor-arg value="912(1-0)a" />
+	<bean id="manifestationDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.UUIDManifestationDetector">
+      <constructor-arg value="997a" />
+      <constructor-arg value="912a" />
 	</bean>	
 		
-	<bean id="personDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="personDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      	    <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
@@ -88,7 +88,7 @@
 		<constructor-arg value="PERSON"/>
 	</bean>
 	
-	<bean id="familyDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="familyDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      	    <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
@@ -108,7 +108,7 @@
 		<constructor-arg value="FAMILY"/>		
 	</bean>
 		
-	<bean id="corporateBodyDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="corporateBodyDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      	    <bean class="eu.aliada.rdfizer.pipeline.format.marc.selector.AllMultipleMatches">
@@ -128,7 +128,7 @@
 		<constructor-arg value="CORPORATE"/>		
 	</bean>
 	
-	<bean id="itemDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="itemDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      		<ref bean="item-identifier"/>
@@ -137,7 +137,7 @@
 		<constructor-arg value="ITEM"/>			
 	</bean>
 	
-	<bean id="conceptDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="conceptDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      		<ref bean="concept-term"/>
@@ -146,7 +146,7 @@
 		<constructor-arg value="CONCEPT"/>		
 	</bean>
 	
-	<bean id="eventDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="eventDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      		<ref bean="event-term"/>
@@ -155,7 +155,7 @@
 		<constructor-arg value="EVENT"/>			
 	</bean>
 	
-	<bean id="placeDetector_m21" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
+	<bean id="placeDetector" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.MultiMapEntityDetector">
 		<constructor-arg>
 	      	<list>
 	      		<ref bean="place-term"/>
