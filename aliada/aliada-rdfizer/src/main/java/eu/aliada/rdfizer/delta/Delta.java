@@ -5,7 +5,9 @@ import static eu.aliada.shared.Strings.isNotNullAndNotEmpty;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -15,6 +17,8 @@ import java.net.HttpURLConnection;
 import java.net.ResponseCache;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,6 +52,9 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.marc4j.MarcXmlReader;
+import org.marc4j.marc.DataField;
+import org.marc4j.marc.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -96,6 +103,11 @@ public class Delta {
 	@Autowired
 	protected Configurations configurations;
 
+	private @Value("${record.delete.dir}") String deleteDir;
+	private @Value("${record.delete.file}") String deleteFile;
+	private @Value("${record.delete.update.file}") String deleteForUpdateFile;
+	private @Value("${record.delete.update.dir}") String deleteForUpdateDir;
+	
 	
 	private final Log logger = new Log(Delta.class);	
 	final String triplesUrl;
@@ -126,8 +138,14 @@ public class Delta {
 	
 	public boolean deleteCluster(final String json){
 		boolean result =  true;
+		List<NameValuePair> clusterList = new ArrayList<>();
 		//extract data from json
-		List<NameValuePair> clusterList = extractClusterFromJson(json);
+		try {
+			clusterList = extractClusterFromJson(json);		
+		}
+		catch (Exception e){
+			return false;
+		}
 		//delete records
 		for (NameValuePair record : clusterList){
 			result = result && deleteSingleCluster(record.getName(), record.getValue());
@@ -137,12 +155,18 @@ public class Delta {
 	
 	public boolean updateCluster(final String json) {
 		boolean result = true;
-		//extract data from json
-		List<NameValuePair> clusterList = extractClusterFromJson(json);
+		List<NameValuePair> clusterList = new ArrayList<>();				
+		try {
+			//extract data from json
+			clusterList = extractClusterFromJson(json);
+		}
+		catch(Exception e) {
+			return false;
+		}
 		//delete records
 		for (NameValuePair record : clusterList){
 			result = result && updateSingleCluster(record.getName(), record.getValue());
-		}
+		}				
 		return result;
 	}
 	
@@ -152,7 +176,7 @@ public class Delta {
 	 * @param json
 	 * @return list of pairs (clstr_id, clstr_type) 
 	 */
-	private List<NameValuePair> extractClusterFromJson(final String json) {
+	private List<NameValuePair> extractClusterFromJson(final String json) throws Exception {
 		List<NameValuePair> list = new ArrayList<>();
 		try {
 			JSONObject root = new JSONObject(json);
@@ -162,49 +186,36 @@ public class Delta {
 			    list.add(new NameValuePair(jsonArray.getJSONObject(i).getString("id"), jsonArray.getJSONObject(i).getString("type")));
 			}			
 		} catch (Exception e){
-			logger.error(e.getMessage());
+			logger.error("extract from cluster: ", e);
+			throw e ;
 		}
 		return list;
 	}
 	
-	/**
-	 * Extract list of pairs (clstr_id, clstr_type) from file
-	 */
-	
-	private List<NameValuePair> extractClusterFromFile(final String fileName, String fileType) {
-		List<NameValuePair> list = new ArrayList<>();
-		try {
-			String inputPath = configurations.getProperty(fileType) + fileName;
-			File inputFile = new File(inputPath);
-			BufferedReader br = new BufferedReader(new FileReader(inputFile)); 
-			String line;
-			while ((line = br.readLine()) != null) {
-				// process the line.
-				list.add(new NameValuePair(line.split(";")[0], line.split(";")[1]));
-			}			
-		} catch (Exception e){
-			logger.error(e.getMessage());
-		}
-		return list;		
-	}
-	
+		
 	/**
 	 * Extract list of records Id
 	 */
 	
-	private List<String> extractRecordFromFile(final String fileName, String fileType) {
+	private List<String> extractRecordFromFile(String fileName) throws Exception{
 		List<String> list = new ArrayList<String>();
 		try {
-			String inputPath = configurations.getProperty(fileType) + fileName;
+			String inputPath = deleteDir + "/" + fileName;
 			File inputFile = new File(inputPath);
-			BufferedReader br = new BufferedReader(new FileReader(inputFile)); 
-			String line;
-			while ((line = br.readLine()) != null) {
-				// process the line.
-				list.add(line);
-			}			
+			if(!inputFile.exists()) {
+				logger.info("DELETE RECORD: There are no records to delete");
+			}
+			else {
+				BufferedReader br = new BufferedReader(new FileReader(inputFile)); 
+				String line;
+				while ((line = br.readLine()) != null) {
+					// process the line.
+					list.add(line);
+				}		
+			}
 		} catch (Exception e){
-			logger.error(e.getMessage());
+			logger.error("extractRecordFromFile Error in retrieving list", e);
+			throw e ;
 		}
 		return list;		
 	}
@@ -329,7 +340,7 @@ public class Delta {
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			logger.error(e.getMessage(), "");
+			logger.error("callReloadCluster", e);
 			return false;
 		}
 		result = result && insert(configuration.getSparqlEndpointUrl(), triplesToLoad);
@@ -354,16 +365,90 @@ public class Delta {
 		}
 		return velocityContext;
 	}
-	
-	
-	public boolean deleteRecord() {
-		boolean result =  true;
-		//extract data from json
-		List<String> recordList = extractRecordFromFile("delete.txt", "record.delete.dir");
-		//delete records
-		for (String record : recordList){
-			result = result && deleteSingleRecord(record);
+	/**
+	 * Deletes record before the update
+	 * @return
+	 */
+	public boolean deleteRecForUpdate() {
+		boolean result = true;
+			//write a file with record to delete for update
+		try {
+			//delete previous txt file
+			Files.deleteIfExists(Paths.get(deleteDir + "/" + deleteForUpdateFile));
+			File directory = new File(deleteForUpdateDir);
+			for (final File fileEntry : directory.listFiles()) {	
+				if(!fileEntry.isDirectory() && fileEntry.getName().endsWith(".xml")) {
+					result = result && xmlExtract(fileEntry.getAbsolutePath(), deleteDir + "/" + deleteForUpdateFile);	
+				}
+			}	
+		}catch (Exception e) {
+			logger.error("delete record for update: ", e);
+			
+			return false;
 		}
+		//now call delete
+		result = result && deleteRecord(deleteForUpdateFile);
+		return result;
+		
+	}
+	/**
+	 * reads xml files and extract a txt with record's ids to delete them for update
+	 * @param pathFileToRead
+	 * @param pathFileToWrite
+	 * @return
+	 */
+	private boolean xmlExtract(final String pathFileToRead, final String pathFileToWrite){
+		boolean result = true;
+		//new file	
+		FileWriter writer = null;
+		try {
+			writer = new FileWriter(pathFileToWrite, true);
+		}catch (Exception e){			
+			logger.error("xml extract", e);
+			return false;
+		}
+			
+		try{  
+			InputStream in = new FileInputStream(pathFileToRead);	
+			MarcXmlReader reader = new MarcXmlReader(in);    
+			
+		    while(reader.hasNext()){
+		    	Record record = reader.next();
+		    	DataField _997 = (DataField) record.getVariableField("997");
+		    	DataField _912 = (DataField) record.getVariableField("912");
+		    	String newLine = _997.getSubfield('a').getData() + _912.getSubfield('a').getData();
+		    	
+		        writer.write(newLine + "\n"); 
+		    }	    
+		    //if I finished record and counter didn't reach its maximum
+		    writer.close();
+			return result;
+		}
+		catch(Exception e){
+			logger.error("xml extract", e);	
+			return false;
+		}
+	}
+
+	public boolean deleteRecord(String fileName) {
+		boolean result =  true;
+		List<String> recordList = new ArrayList<>();
+		try {
+			//extract data from json		
+			recordList = extractRecordFromFile(fileName);
+		}
+		catch (Exception e) {
+			return false;
+		}
+		//delete records
+		int count = 0;
+		boolean singleResult = true;
+		for (String record : recordList){
+			singleResult = deleteSingleRecord(record);
+			if(singleResult) count++;
+			result = result && singleResult;			
+		}
+		logger.info("Deleted " + count + " records");
 		return result;
 	}
 	
@@ -383,7 +468,7 @@ public class Delta {
 			    list.add(jsonArray.getString(i));
 			}
 		} catch (Exception e){
-			logger.error(e.getMessage());
+			logger.error("extractRecordFromJson", e);
 		}
 		return list;
 	}
@@ -393,8 +478,8 @@ public class Delta {
 	 * Delete triples related to record 
 	 * @param idRecord
 	 */			
-	public boolean deleteSingleRecord(final String idRecord) {
-		logger.info("deleting record " + idRecord + "...");
+	public boolean deleteSingleRecord(final String idRecord) {		
+		logger.debug("deleting record " + idRecord + "...");
 		boolean result = true;
 				
 		final String sparqlEndPointUrl = configuration.getSparqlEndpointUrl();
@@ -424,9 +509,8 @@ public class Delta {
 		if(!result){
 			logger.error("Error deleting record " + idRecord);
 		}
-		else {
-			logger.info("record " + idRecord + " deleted");
-		}
+		else {			
+		}		
 		return result;
 	}
 
@@ -444,10 +528,10 @@ public class Delta {
 		try {
 			delete(url);
 		} catch (HttpException e) {			
-			logger.error(e.getMessage());
+			logger.error("call delete", e);
 			return false;
 		} catch (IOException e) {			
-			logger.error(e.getMessage() + " for url " + url);
+			logger.error("call delete", e);
 			return false;
 		}
 		return true;
@@ -484,7 +568,7 @@ public class Delta {
 			return URLEncoder.encode(input, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			// TODO Auto-generated catch block
-			logger.error(e.getMessage() + " for input " + input, input);
+			logger.error(e.getMessage() + " for input " + input, input, e);
 		}
 		return input;
 	}	
@@ -502,7 +586,7 @@ public class Delta {
 		//set method DELETE 
         HttpMethod method = new DeleteMethod(url);
         int responseCode = httpclient.executeMethod(method);
-        //logger.debug("responseCode " + responseCode, responseCode);        
+        logger.debug("responseCode for deleteRecord: " + responseCode);        
         return responseCode;
     }
 		
@@ -522,7 +606,7 @@ public class Delta {
 			 responseBody.close();
 			//logger.debug("response code: " + response + ", inserting cluster");
 		} catch (Exception e) {
-			logger.error(e.getMessage());
+			logger.error("insert", e);
 			return false;
 		}
 		return true;

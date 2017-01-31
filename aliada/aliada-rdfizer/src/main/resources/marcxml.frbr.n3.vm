@@ -759,20 +759,117 @@ $manifestation_s $is_a $instance_c .
 ## graphicScaleNote
 #triplesWithBlankNode($root $manifestation_s $note "507" "a" "Note" $note_c $rdfs_label "507" "a" $noteType "" "Graphic scale")
 
+#*
 ##530
 #triplesWithBlankNode($root $manifestation_s $note "530" "a" "Note" $note_c $rdfs_label "530" "a")
-#oneTriple($root $manifestation_s "530" "b" $acquisitionSource)
-#oneTriple($root $manifestation_s "530" "c" $acquisitionTerms)
-#triplesWithBlankNode($root $manifestation_s $identifiedBy "530" "d" "Identifier" $stockNumber_c $rdfs_label "530" "d")
-#oneTripleWithUri($root $manifestation_s "530" "u" $electronicLocator "")
 
-##533
-#triplesWithBlankNode($root $manifestation_s $carrier '533' 'a' 'Carrier' $carrier_c $rdfs_label '533' 'a')
-#triplesWithBlankNode($root $manifestation_s $provisionActivity "533" "bcd" "Distribution" $distribution_c $date '533' 'd')
+##530 in the new map
+#set ($_530tags = $xpath.many("datafield[@tag='530']", $root))
+#foreach($_530tag in $_530tags)
+	#set($_530value = $xpath.combine($_530tag, "abcdu"))	
+	#if($function.isNotNullAndNotEmpty($_530value))
+		#set($s_530 = "#uri_with_strong_normalization('Instance' ${_530value})")
+		$s_530 $is_a $instance_c .
+		
+		$s_530 $instanceOf $cluster_uri .
+		$manifestation_s $otherPhysicalFormat $s_530 .
+		
+		#oneTripleInner ($s_530 $acquisitionSource $_530tag "b" "530")
+		
+		#oneTripleInner ($s_530 $acquisitionTerms $_530tag "c" "530")		
+				
+		#triplesWithBlankNodeSubj($root $$_530 $note "530" "a" "Note" $note_c $rdfs_label "530" "a")	
+		
+		#triplesWithBlankNodeSubj($root $s_530 $identifiedBy "530" " b" 'Identifier' $stockNumber_c $rdfs_label "530" "b")
+		
+		#triplesWithBlankNodeSubj($root $s_530 $appliesTo "530" "3" 'AppliesTo' $appliesTo_c $rdfs_label "530" "3")
+		
+		## $5
+		#triplesApplicableInstitution($s_530 $_530tag)
+		
+		#set($_530value_u = $xpath.combine($_530tag, "u"))
+		#if($function.isNotNullAndNotEmpty($_530value_u))
+			#set($s_530_item = "#uri_with_strong_normalization('Item' ${_530value_u})")		
+			$s_530 $hasItem $s_530_item .
+			$s_530_item $is_a $item_c .
+			$s_530_item $electronicLocator <$_530value_u> .
+		#end		
+	#end
+#end
+
+
+
+##533 new map  DA RIGUARDARE ASSOLUTAMENTE !!!!!!!!!!!!!!!!!!
+#set ($_533tags = $xpath.many("datafield[@tag='533']", $root))
+#foreach($_533tag in $_533tags)
+	#set($_533value = $xpath.combine($_533tag, "abcdefmn"))	
+	#if($function.isNotNullAndNotEmpty($_533value))
+		#set($s_533 = "#uri_with_strong_normalization('Instance' ${_533value})")
+		$s_533 $is_a $instance_c .
+		
+		$s_533 $instanceOf $cluster_uri .
+		$manifestation_s $hasReproduction $s_533 .
+		
+		#oneTripleInner ($s_533 $seriesStatement $_530tag "f" "533")
+						
+		#triplesWithBlankNodeSubj($root $s_533 $carrier "533"  "a" 'Carrier' $carrier_c $rdfs_label '533' 'd')
+		
+		## !!!!!!!!!
+		##domanda: ma se non ho $b nè $c nè $d, c'è il rischio che venga generato comunque un uri_with_strong_normalization?
+		#set($provisionValue = $xpath.combine($_533tag, "bcd"))	
+		#if($function.isNotNullAndNotEmpty($provisionValue))
+			#set($provisionBlank = "#uri_with_strong_normalization('ProvisionActivity' ${provisionValue})")
+			$s_533 $provisionActivity_c $provisionBlank .
+			
+			#set($s_533_d = $xpath.combine($_533tag, "d") )	
+			#if($function.isNotNullAndNotEmpty($s_533_d))
+				$provisionBlank $date "$s_533_d" .
+			#end
+
+			#set($s_533_b = $xpath.combine($_533tag, "b") )			
+			#if($function.isNotNullAndNotEmpty($s_533_b))
+				#set($_533_b_blank = "#uri_with_strong_normalization('Place' ${s_533_b})")
+				$provisionBlank $place $_533_b_blank .
+				$_533_b_blank $is_a $place_c .
+				$_533_b_blank $rdfs_label $s_533_b .
+			#end
+			
+			#set($s_533_c = $xpath.combine($_533tag, "c") )			
+			#if($function.isNotNullAndNotEmpty($s_533_c))
+				#set($_533_c_blank = "#uri_with_strong_normalization('Agent' ${s_533_c})")
+				$provisionBlank $agent $_533_c_blank .
+				$_533_c_blank $is_a $agent_c .
+				$_533_c_blank $rdfs_label $s_533_c .
+			#end			
+		#end
+		
+		#triplesWithBlankNodeSubj($root $s_533 $provisionActivity "533"  "bcd" 'Distribution' $distribution_c $date '533' 'd')
+		
+		#oneComplexTripleInner($s_533 $appliesTo $_530tag "533" 'AppliesTo' $appliesTo_c "3" $rdfs_label)
+		
+		#oneComplexTripleInner($s_533 $appliesTo $_530tag "533" 'AppliesTo' $appliesTo_c "3" $rdfs_label)
+		
+		## $5
+		#triplesApplicableInstitution($s_530 $_530tag)
+		
+		#set($_530value_u = $xpath.combine($_530tag, "u"))
+		#if($function.isNotNullAndNotEmpty($_530value_u))
+			#set($s_530_item = "#uri_with_strong_normalization('Item' ${_530value_u})")		
+			$s_530 $hasItem $s_530_item .
+			$s_530_item $is_a $item_c .
+			$s_530_item $electronicLocator <$_530value_u> .
+		#end		
+	#end
+#end
+
+
+##533 old
+
 #subTriples($root "533" "bcd" "Distibution" $agent "Agent" "c")
 #subTriples($root "533" "bcd" "Distibution" $place "Place" "b")
-#oneTriple($root $manifestation_s "533" "f" $seriesStatement)
-#triplesWithBlankNode($root $manifestation_s $note "533" "n" "Note" $note_c $rdfs_label "533" "n")
+#oneTripleSubjectVar($root "Instance" "533" "f" $seriesStatement)
+#triplesWithBlankNodeSubjectVar($root "Instance" $note "533" "n" "Note" $note_c $rdfs_label "533" "n")
+
 
 ##534
 #triplesWithBlankNode($root $manifestation_s $contribution '534' 'a' 'Contribution' $contribution_c $rdfs_label '534' 'a')
@@ -789,7 +886,7 @@ $manifestation_s $is_a $instance_c .
 #triplesWithBlankNode($root $manifestation_s $note "534" "n" "Note" $note_c $rdfs_label "534" "n")
 #triplesWithBlankNode($root $manifestation_s $identifiedBy "534" "x" "Identifier" $issn_c $rdfs_label "534" "x")
 #triplesWithBlankNode($root $manifestation_s $identifiedBy "534" "z" "Identifier" $isbn_c $rdfs_label "534" "z")
-
+*#
 
 ##aspectRatio
 #triplesWithBlankNode($root $manifestation_s $aspectRatio "007" "04m" "AspectRation" $aspectRatio_c $rdfs_label "007" "04ma")
@@ -865,6 +962,7 @@ $manifestation_s $is_a $instance_c .
 ############################################
 
 ##510
+##not sure if index is the right property, Mapping indicated indexedIn but doesn't exsist
 #set ($_tag510 = $xpath.many("datafield[@tag='510']", $root))
 	#foreach($_tag510 in $_tags510)
 		#set($_510_all = $xpath.combine($_tag510, "abcx"))	

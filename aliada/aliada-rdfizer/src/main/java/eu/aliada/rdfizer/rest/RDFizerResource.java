@@ -97,6 +97,9 @@ public class RDFizerResource implements RDFizer {
 	@Value(value = "${auth.input.dir}")
 	protected String authXmlInputDir;	
 	
+	@Value(value = "${record.delete.file}")
+	protected String deleteRecordFile;
+	
 	@Autowired
 	protected Cache cache;
 
@@ -148,8 +151,7 @@ public class RDFizerResource implements RDFizer {
     }
 	
 	/**
-	 * Delete all info connected to the record list
-	 * @param list of record in json. I.e. { "records": ["UNIBAS000037578", "UNINA000683506"] }
+	 * Delete all info connected to the record list	
 	 * 
 	 */	
 	@GET
@@ -158,7 +160,27 @@ public class RDFizerResource implements RDFizer {
 	@ResponseBody
 	public String deleteRecord() {		
 		LOGGER.debug("deleteRecord called");		
-		boolean result = delta.deleteRecord();		
+		boolean result = delta.deleteRecord(deleteRecordFile);		
+		if(result) {
+			return String.valueOf(HttpStatus.OK);
+		}
+		else {
+			return String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+			
+	
+	/**
+	 * delete all info connected to the record list	for udpate 
+	 * 
+	 */	
+	@GET
+	@Path("/deleteRecForUpdate")
+	@RequestMapping(value = "/deleteRecForUpdate", method = RequestMethod.GET)
+	@ResponseBody
+	public String deleteRecForUpdate() {		
+		LOGGER.debug("deleteRecForUpdate called");		
+		boolean result = delta.deleteRecForUpdate();		
 		if(result) {
 			return String.valueOf(HttpStatus.OK);
 		}
