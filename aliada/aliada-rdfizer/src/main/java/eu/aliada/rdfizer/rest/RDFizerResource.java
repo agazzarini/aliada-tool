@@ -15,6 +15,10 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.PostConstruct;
@@ -36,6 +40,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.eclipse.jetty.client.ResponseNotifier;
 import org.marc4j.MarcReader;
 import org.marc4j.MarcStreamReader;
 import org.marc4j.MarcWriter;
@@ -45,6 +50,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -100,6 +106,10 @@ public class RDFizerResource implements RDFizer {
 	@Value(value = "${record.delete.file}")
 	protected String deleteRecordFile;
 	
+	@Value(value = "${record.delete.dir}")
+	protected String deleteRecordDir;
+	
+	
 	@Autowired
 	protected Cache cache;
 
@@ -149,46 +159,7 @@ public class RDFizerResource implements RDFizer {
 		mods.convert();
         return "ok";
     }
-	
-	/**
-	 * Delete all info connected to the record list	
-	 * 
-	 */	
-	@GET
-	@Path("/deleteRecord")
-	@RequestMapping(value = "/deleteRecord", method = RequestMethod.GET)
-	@ResponseBody
-	public String deleteRecord() {		
-		LOGGER.debug("deleteRecord called");		
-		boolean result = delta.deleteRecord(deleteRecordFile);		
-		if(result) {
-			return String.valueOf(HttpStatus.OK);
-		}
-		else {
-			return String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-			
-	
-	/**
-	 * delete all info connected to the record list	for udpate 
-	 * 
-	 */	
-	@GET
-	@Path("/deleteRecForUpdate")
-	@RequestMapping(value = "/deleteRecForUpdate", method = RequestMethod.GET)
-	@ResponseBody
-	public String deleteRecForUpdate() {		
-		LOGGER.debug("deleteRecForUpdate called");		
-		boolean result = delta.deleteRecForUpdate();		
-		if(result) {
-			return String.valueOf(HttpStatus.OK);
-		}
-		else {
-			return String.valueOf(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-			
+				
 	/**
 	 * Delete all info connected to the cluster list
 	 *  { "clusters": [
@@ -236,6 +207,46 @@ public class RDFizerResource implements RDFizer {
 		}		
 	}
 	
+	/**
+	 * Delete all info connected to the record list	
+	 * 
+	 */	
+	@GET
+	@Path("/deleteRecord")
+	@RequestMapping(value = "/deleteRecord", method = RequestMethod.GET)
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response deleteRecord() {				
+		LOGGER.debug("deleteRecord called");	
+		String result = delta.deleteRecord(deleteRecordFile);		
+		
+			//rename file
+			try {
+				java.nio.file.Path source = Paths.get(deleteRecordDir + "/" + deleteRecordFile);
+				Date date = new Date();
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss") ;
+				Files.move(source, source.resolveSibling("delete_record_" + dateFormat.format(date) + ".txt" ));
+			} catch (Exception e){	
+				e.printStackTrace();
+			}
+		return Response.ok(result.toString()).build();
+		
+	}
+	
+
+	/**
+	 * delete all info connected to the record list	for udpate 
+	 * 
+	 */	
+	@GET
+	@Path("/deleteRecForUpdate")
+	@RequestMapping(value = "/deleteRecForUpdate", method = RequestMethod.GET)
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response deleteRecForUpdate() {		
+		LOGGER.debug("deleteRecForUpdate called");		
+		StringBuffer result = new StringBuffer();
+		result.append(delta.deleteRecForUpdate());		
+		return Response.ok(result.toString()).build();
+	}
 	
 	
 	

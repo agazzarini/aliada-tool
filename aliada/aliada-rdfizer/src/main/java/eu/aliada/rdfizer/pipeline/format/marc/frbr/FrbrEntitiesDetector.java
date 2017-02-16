@@ -99,25 +99,26 @@ public class FrbrEntitiesDetector implements Processor {
 	public void process(final Exchange exchange) throws Exception {
 		final Message in = exchange.getIn();
 		final Integer jobId = in.getHeader(Constants.JOB_ID_ATTRIBUTE_NAME, Integer.class);			
-		try {
-			final JobInstance configuration = cache.getJobInstance(jobId);
-			if (configuration == null) {
+		try {			
+			final JobInstance configuration = cache.getJobInstance(jobId);			
+			if (configuration == null) {				
 				log.error(MessageCatalog._00038_UNKNOWN_JOB_ID, jobId);
 				cleanUp(jobId);
 				throw new IllegalArgumentException(String.valueOf(jobId));
+			}			
+			final FrbrDocument entitiesDocument = frbrDetection(exchange.getIn().getBody(Document.class));			
+			if (isValid(entitiesDocument)) {				
+				in.setBody(entitiesDocument);				
+			} else {				
+				log.debug(MessageCatalog._00041_FRBR_ENTITY_DETECTION_FAILED);				
+				in.setBody(NullObject.instance);				
 			}
-	
-			final FrbrDocument entitiesDocument = frbrDetection(exchange.getIn().getBody(Document.class));
-			if (isValid(entitiesDocument)) {
-				in.setBody(entitiesDocument);
-			} else {
-				log.debug(MessageCatalog._00041_FRBR_ENTITY_DETECTION_FAILED);
-				in.setBody(NullObject.instance);
-			}
-		} catch (final IllegalArgumentException exception) {
+		} catch (final IllegalArgumentException exception) {	
+			log.error("", exception);
 			throw exception;
-		} catch (final Exception exception) {
-			log.error(MessageCatalog._00038_UNKNOWN_JOB_ID, jobId);
+		} catch (final Exception exception) {		
+			log.error("", exception);
+			log.error(MessageCatalog._00038_UNKNOWN_JOB_ID, jobId);			
 			cleanUp(jobId);
 			throw new IllegalArgumentException(String.valueOf(jobId));
 		}
@@ -195,69 +196,69 @@ public class FrbrEntitiesDetector implements Processor {
 	 * @param target the current record (as {@link Document}). 
 	 * @return the FRBR value object.
 	 */
-	FrbrDocument frbrDetection(final Document target) {
-		final Map<String, List<Cluster>> works = works(target);
-		final FrbrDocument document = new FrbrDocument(
-				target,
-				works,
-				expression(target, works),
-				manifestation(target),
-				people(target, works),
-				families(target, works),
-				corporates(target, works),
-				items(target),
-				concepts(target),
-				events(target),
-				places(target));
-		
-		if (TRACE_FRBR_ENTITIES && log.isDebugEnabled()) {
-			StringBuilder builder = new StringBuilder();
-			builder.append("************************\n");
-			builder.append("WORKs \n");
-			
-			works.forEach((k,v) -> {
-				builder.append("Source tag = ").append(k).append(" (").append(v.size()).append("):\n");
-				v.stream().forEach(cluster -> builder
-						.append("\t - ")
-						.append(cluster.getId())
-						.append(" (").append(cluster.size()).append(" members) \n"));
-			});
-			
-			builder.append("\n---------------\n");			
-			if (document.getExpressionIDs() != null && !document.getExpressionIDs().isEmpty()) {
-				builder.append("EXPRESSIONs \n");
-				document
-					.getExpressionIDs()
-						.forEach(
-								expression -> builder
-												.append(expression.lang)
-												.append(" ( Orphan : ")
-												.append(expression.orphan)
-												.append("):\n"));
+	FrbrDocument frbrDetection(final Document target) {	
+			final Map<String, List<Cluster>> works = works(target);		
+			FrbrDocument document = new FrbrDocument(
+					target,
+					works,
+					expression(target, works),
+					manifestation(target),
+					people(target, works),
+					families(target, works),
+					corporates(target, works),
+					items(target),
+					concepts(target),
+					events(target),
+					places(target));		
+			if (TRACE_FRBR_ENTITIES && log.isDebugEnabled()) {				
+				StringBuilder builder = new StringBuilder();
+				builder.append("************************\n");
+				builder.append("WORKs \n");
+				
+				works.forEach((k,v) -> {
+					builder.append("Source tag = ").append(k).append(" (").append(v.size()).append("):\n");
+					v.stream().forEach(cluster -> builder
+							.append("\t - ")
+							.append(cluster.getId())
+							.append(" (").append(cluster.size()).append(" members) \n"));
+				});
+				
 				builder.append("\n---------------\n");			
+				if (document.getExpressionIDs() != null && !document.getExpressionIDs().isEmpty()) {
+					builder.append("EXPRESSIONs \n");
+					document
+						.getExpressionIDs()
+							.forEach(
+									expression -> builder
+													.append(expression.lang)
+													.append(" ( Orphan : ")
+													.append(expression.orphan)
+													.append("):\n"));
+					builder.append("\n---------------\n");			
+				}
+				builder.append("MANIFESTATION \n");
+				builder.append(document.getManifestationID());
+				builder.append("\n---------------\n");			
+				builder.append("PERSONs \n");
+				document.getPersonIDs().forEach((k,v) -> {
+					builder.append("Source tag = ").append(k).append(" (").append(v.size()).append("):\n");
+					v.stream().forEach(cluster -> builder
+							.append("\t - ")
+							.append(cluster.getId())
+							.append(" (").append(cluster.size()).append(" members, has ")
+							.append(cluster.parents().size())
+							.append(" parents) \n"));
+				});
+				
+				builder.append("\n---------------\n");			
+				builder.append("CORPORATEs \n");
+				
+				builder.append("\n---------------\n");			
+				builder.append("FAMILIes \n");
+				
+				log.debug(builder.toString());
 			}
-			builder.append("MANIFESTATION \n");
-			builder.append(document.getManifestationID());
-			builder.append("\n---------------\n");			
-			builder.append("PERSONs \n");
-			document.getPersonIDs().forEach((k,v) -> {
-				builder.append("Source tag = ").append(k).append(" (").append(v.size()).append("):\n");
-				v.stream().forEach(cluster -> builder
-						.append("\t - ")
-						.append(cluster.getId())
-						.append(" (").append(cluster.size()).append(" members, has ")
-						.append(cluster.parents().size())
-						.append(" parents) \n"));
-			});
 			
-			builder.append("\n---------------\n");			
-			builder.append("CORPORATEs \n");
-			
-			builder.append("\n---------------\n");			
-			builder.append("FAMILIes \n");
-			
-			log.debug(builder.toString());
-		}
 		return document;
 	}
 	
@@ -270,21 +271,21 @@ public class FrbrEntitiesDetector implements Processor {
 	 */
 	Map<String, List<Cluster>> clusteredWorks(
 			final Document target, 
-			final MultiMapEntityDetector detector) {
-		final Map<String, List<String>> entities = detector.detect(target);
-		final Map<String, List<Cluster>> result = new HashMap<String, List<Cluster>>(entities.size());
-		for (final Entry<String, List<String>> entry : entities.entrySet()) {
-			final List<Cluster> clusters = 	
-					entry.getValue()
-						.stream()
-						.filter(heading -> function.isNotNullAndNotEmpty(heading))
-						.map(heading -> function.getTitleCluster(heading))
-						.collect(toList());
-			if (clusters != null && !clusters.isEmpty()) {
-				result.put(entry.getKey(), clusters);			
+			final MultiMapEntityDetector detector) {					
+			final Map<String, List<String>> entities = detector.detect(target);			
+			Map<String, List<Cluster>> result = new HashMap<String, List<Cluster>>(entities.size());					
+			for (final Entry<String, List<String>> entry : entities.entrySet()) {				
+				final List<Cluster> clusters = 	
+						entry.getValue()
+							.stream()
+							.filter(heading -> function.isNotNullAndNotEmpty(heading))
+							.map(heading -> function.getTitleCluster(heading))
+							.collect(toList());				
+				if (clusters != null && !clusters.isEmpty()) {					
+					result.put(entry.getKey(), clusters);					
+				}
 			}
-		}
-
+				
 		return result;		
 	}	
 	

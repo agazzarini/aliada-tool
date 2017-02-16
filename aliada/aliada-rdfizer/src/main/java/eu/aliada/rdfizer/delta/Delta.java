@@ -61,6 +61,7 @@ import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.bigdata.bop.joinGraph.rto.Path;
 import com.hp.hpl.jena.query.ARQ;
 import com.hp.hpl.jena.sparql.engine.http.Service;
 import com.hp.hpl.jena.sparql.util.Context;
@@ -187,6 +188,7 @@ public class Delta {
 			}			
 		} catch (Exception e){
 			logger.error("extract from cluster: ", e);
+			e.printStackTrace();
 			throw e ;
 		}
 		return list;
@@ -197,13 +199,13 @@ public class Delta {
 	 * Extract list of records Id
 	 */
 	
-	private List<String> extractRecordFromFile(String fileName) throws Exception{
+	private List<String> extractRecordFromFile(String fileName, StringBuilder message) throws Exception{
 		List<String> list = new ArrayList<String>();
 		try {
 			String inputPath = deleteDir + "/" + fileName;
 			File inputFile = new File(inputPath);
 			if(!inputFile.exists()) {
-				logger.info("DELETE RECORD: There are no records to delete");
+				message.append("DELETE RECORD: There are no file in " + inputPath + "\n");
 			}
 			else {
 				BufferedReader br = new BufferedReader(new FileReader(inputFile)); 
@@ -215,6 +217,8 @@ public class Delta {
 			}
 		} catch (Exception e){
 			logger.error("extractRecordFromFile Error in retrieving list", e);
+			message.append(e.getMessage());
+			e.printStackTrace();
 			throw e ;
 		}
 		return list;		
@@ -341,6 +345,7 @@ public class Delta {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			logger.error("callReloadCluster", e);
+			e.printStackTrace();
 			return false;
 		}
 		result = result && insert(configuration.getSparqlEndpointUrl(), triplesToLoad);
@@ -369,26 +374,30 @@ public class Delta {
 	 * Deletes record before the update
 	 * @return
 	 */
-	public boolean deleteRecForUpdate() {
-		boolean result = true;
+	public String deleteRecForUpdate() {
+		StringBuilder result = new StringBuilder();
 			//write a file with record to delete for update
 		try {
 			//delete previous txt file
 			Files.deleteIfExists(Paths.get(deleteDir + "/" + deleteForUpdateFile));
 			File directory = new File(deleteForUpdateDir);
+			if(directory.listFiles().length == 0){
+				result.append("There are no files to update \n");
+			}
 			for (final File fileEntry : directory.listFiles()) {	
 				if(!fileEntry.isDirectory() && fileEntry.getName().endsWith(".xml")) {
-					result = result && xmlExtract(fileEntry.getAbsolutePath(), deleteDir + "/" + deleteForUpdateFile);	
+					result.append("reading records in file: " + fileEntry.getAbsolutePath() + "\n");
+					xmlExtract(fileEntry.getAbsolutePath(), deleteDir + "/" + deleteForUpdateFile);	
 				}
 			}	
 		}catch (Exception e) {
 			logger.error("delete record for update: ", e);
-			
-			return false;
+			e.printStackTrace();
+			return result.toString();
 		}
 		//now call delete
-		result = result && deleteRecord(deleteForUpdateFile);
-		return result;
+		result.append(deleteRecord(deleteForUpdateFile));
+		return result.toString();
 		
 	}
 	/**
@@ -405,6 +414,7 @@ public class Delta {
 			writer = new FileWriter(pathFileToWrite, true);
 		}catch (Exception e){			
 			logger.error("xml extract", e);
+			e.printStackTrace();
 			return false;
 		}
 			
@@ -426,30 +436,38 @@ public class Delta {
 		}
 		catch(Exception e){
 			logger.error("xml extract", e);	
+			e.printStackTrace();
 			return false;
 		}
 	}
 
-	public boolean deleteRecord(String fileName) {
-		boolean result =  true;
+	public String deleteRecord(String fileName) {
+		StringBuilder result = new StringBuilder();
 		List<String> recordList = new ArrayList<>();
 		try {
 			//extract data from json		
-			recordList = extractRecordFromFile(fileName);
+			recordList = extractRecordFromFile(fileName, result);
 		}
 		catch (Exception e) {
-			return false;
+			logger.error("", e);
+			e.printStackTrace();
+			return result.toString();
 		}
 		//delete records
 		int count = 0;
+		boolean resultBoolean = true;
 		boolean singleResult = true;
 		for (String record : recordList){
 			singleResult = deleteSingleRecord(record);
-			if(singleResult) count++;
-			result = result && singleResult;			
+			if(singleResult) count++;			
+			resultBoolean = resultBoolean && singleResult;			
+		}
+		if(!resultBoolean){
+			result.append("Error: are you sure Blazegraph server is up?\n");
 		}
 		logger.info("Deleted " + count + " records");
-		return result;
+		result.append("Deleted " + count + " records\n");
+		return result.toString();
 	}
 	
 	/**
@@ -469,6 +487,7 @@ public class Delta {
 			}
 		} catch (Exception e){
 			logger.error("extractRecordFromJson", e);
+			e.printStackTrace();
 		}
 		return list;
 	}
@@ -508,6 +527,7 @@ public class Delta {
 		
 		if(!result){
 			logger.error("Error deleting record " + idRecord);
+			
 		}
 		else {			
 		}		

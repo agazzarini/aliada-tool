@@ -957,7 +957,7 @@ $manifestation_s $is_a $instance_c .
 #end
 
 ##library_source
-#librarySourceTriple
+##librarySourceTriple
 
 ############################################
 
