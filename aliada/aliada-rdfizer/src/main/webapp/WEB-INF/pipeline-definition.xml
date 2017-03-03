@@ -15,13 +15,12 @@
 	<bean id="count-debugger" class="eu.aliada.rdfizer.pipeline.processors.JustDebugTriplesCount"/>
 	<bean id="no-op" class="eu.aliada.rdfizer.pipeline.processors.NoOp"/>
 	<bean id="add-2-rdf-store" class="eu.aliada.rdfizer.pipeline.processors.AddToRDFStore">
-<!--	  <constructor-arg value="http://test-share-cat.oseegenius.it:9999/blazegraph/namespace/aliada/sparql"/> --> 
-		<constructor-arg value="http://localhost:9999/blazegraph/namespace/aliada/sparql"/>
+		<constructor-arg value="http://127.0.0.1:9999/blazegraph/namespace/aliada/sparql"/>
 	    <constructor-arg value="1000"/>
 	    <constructor-arg value="-1"/>
 	</bean>
 	<bean id="delta" class="eu.aliada.rdfizer.delta.Delta">
-		<constructor-arg value="http://localhost:9999/blazegraph/namespace/aliada/sparql"/>
+		<constructor-arg value="http://127.0.0.1:9999/blazegraph/namespace/aliada/sparql"/>
 		<constructor-arg value="http://rdf.atcult.it/"/>
 	</bean>
 	<bean id="check-job-completeness" class="eu.aliada.rdfizer.pipeline.processors.CheckJobCompleteness"/>
@@ -31,7 +30,8 @@
 	<bean id="string-to-xml" class="eu.aliada.rdfizer.pipeline.format.xml.XmlRecordToDocumentTranslator" />
 	<bean id="xml-to-rdf" class="eu.aliada.rdfizer.pipeline.format.xml.SynchXmlDocumentTranslator"/>
 	<bean id="marcxml-to-rdf-using-frbr" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.FrbrDocumentTranslator"/>
-	<bean id="detect-frbr-entities" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.FrbrEntitiesDetector" />
+	<bean id="detect-unimarc-frbr-entities" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.FrbrEntitiesDetector" />
+	<bean id="detect-marc21-frbr-entities" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.Marc21FrbrEntitiesDetector"/>
 	<bean id="detect-auth-entities" class="eu.aliada.rdfizer.pipeline.format.marc.frbr.LenientFrbrEntitiesDetector"/>
 	<bean id="run-marcxml-validation" class="eu.aliada.rdfizer.pipeline.format.xml.CaptureValidationSampleAndRunValidation">
 		<constructor-arg value="record"/>
@@ -73,7 +73,7 @@
 					<process ref="count-marcxml-records"/>
 					<split streaming="true">
 						<tokenize token="record" xml="true" />
-						<to uri="seda:marcxml-record-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
+						<to uri="seda:unimarcxml-record-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
 					</split>
 				</when>		
 				<when>
@@ -89,17 +89,25 @@
 				</otherwise>		
 			</choice>	
 		</route>
-		<route>
-			<from uri="direct:marcxml-validation-channel"/>
-			<process ref="string-to-xml"/>
-			<process ref="detect-frbr-entities"/>
-			<process ref="marcxml-to-rdf-using-frbr"/>
-			<process ref="rdf-sample-validation"/>
-		</route>		
+<!-- 		<route> -->
+<!-- 			<from uri="direct:marcxml-validation-channel"/> -->
+<!-- 			<process ref="string-to-xml"/> -->
+<!-- 			<process ref="detect-frbr-entities"/> -->
+<!-- 			<process ref="marcxml-to-rdf-using-frbr"/> -->
+<!-- 			<process ref="rdf-sample-validation"/> -->
+<!-- 		</route>		 -->
 		<route>
 			<from uri="seda:marcxml-record-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
 			<process ref="string-to-xml"/>
-			<process ref="detect-frbr-entities"/>
+			<process ref="detect-marc21-frbr-entities"/>
+			<process ref="marcxml-to-rdf-using-frbr"/>
+			<process ref="check-job-completeness"/>
+			<to uri="seda:triples-channel?concurrentConsumers=10&amp;size=250&amp;blockWhenFull=true" />
+		</route>
+		<route>
+			<from uri="seda:unimarcxml-record-channel?concurrentConsumers=5&amp;size=1000&amp;blockWhenFull=true" />
+			<process ref="string-to-xml"/>
+			<process ref="detect-unimarc-frbr-entities"/>
 			<process ref="marcxml-to-rdf-using-frbr"/>
 			<process ref="check-job-completeness"/>
 			<to uri="seda:triples-channel?concurrentConsumers=10&amp;size=250&amp;blockWhenFull=true" />
