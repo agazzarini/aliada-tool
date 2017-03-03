@@ -99,7 +99,7 @@ public class UUIDManifestationDetector extends AbstractEntityDetector<String> {
 		expressionXpath.append("datafield[@tag='")
 				.append(tag)
 				.append("'");
-		if(indicators != null){
+		if(indicators != null && indicators.length > 1){			
 			expressionXpath.append(" and @ind1='").append(indicators[0]).append("'");
 			expressionXpath.append(" and @ind2='").append(indicators[1]).append("'");
 		}
