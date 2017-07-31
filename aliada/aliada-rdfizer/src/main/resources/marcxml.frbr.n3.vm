@@ -16,15 +16,16 @@
 			#set($firstTimeExternalLink = true)
 			#foreach($cluster_entry in $cluster.entries)	
 			
-				#if($cluster_entry.nameType && $firstTimeNameType)
-					##set($cluster_uri = "#uri_literal('Person' $cluster.id)")
+				#if($cluster_entry.nameType && $firstTimeNameType)					
 					#set($type = $function.mapNameType($cluster_entry.nameType))
 					#set($cluster_uri = "#uri_literal('Agent' $cluster.id)")
+					$cluster_uri $is_a $agent_c .
 					$cluster_uri $is_a #bf($type) .
 					#set($bar = $authorsArray.add($cluster_uri))					
 					#foreach($work_id in $cluster.parents())					
 						#set($work_uri = "#uri_literal('Work' $work_id)")
-						$work_uri #bf('creator') $cluster_uri . 												
+						##creator						
+						$work_uri #relator("cre") $cluster_uri . 												
 					#end 						
 					#set($firstTimeNameType = false)
 				#end	
@@ -32,8 +33,6 @@
 				
 				#if ($cluster_entry.viafId && $firstTimeViaf)
 					$cluster_uri #madsrdf('isIdentifiedByAuthority') <${cluster_entry.viafId}> .					
-					##versione alternativa per viaf in bibframe
-					## le teniamo entrambe per completezza
 					#set($firstTimeViaf = false)
 				#end
 				
@@ -76,23 +75,21 @@
 			#set($firstTimeViaf = true)
 			#foreach($cluster_entry in $cluster.entries)						
 				#if($cluster_entry.preferred)
-					#oneValue($cluster_uri $cluster_entry.heading "WorkTitle" $workTitle_c $mainTitle $rdfs_label) 						
+					#oneValue($cluster_uri $cluster_entry.heading "title" $title_c $mainTitle $rdfs_label) 						
 				#elseif ($cluster_entry.viafId && $firstTimeViaf)
-					$cluster_uri <http://www.w3.org/2002/07/owl#sameAs> <http://viaf.org/viaf/${cluster_entry.viafId}> . 
+					$cluster_uri #madsrdf('isIdentifiedByAuthority') <http://viaf.org/viaf/${cluster_entry.viafId}> . 
 					#set($firstTimeViaf = false)
 				#else
-					#oneValue($cluster_uri $cluster_entry.heading "WorkTitle" $workTitle_c $title $rdfs_label) 
+					#oneValue($cluster_uri $cluster_entry.heading "Title" $title_c $title $rdfs_label) 
 				#end 	
 			#end	
 			$function.markTitleClusterAsProcessed($cluster)
 		#end					
-		#set($text = $function.escape($function.clean($cluster.id)))
+		#set($text = $function.escape($function.cleanS($cluster.id)))
 		#set($s1 = "#uri_with_strong_normalization('local' ${text})")
 		$s1 $is_a $identifier_c .
 		$s1 $rdf_value "$cluster.id" .
-		$cluster_uri $identifiedBy $s1 .
-					
-       
+		$cluster_uri $identifiedBy $s1 .       
 	#end 			
 #end  
 
@@ -100,20 +97,64 @@
 #foreach($w in $frbr.flatWorkIDs)
 	#set($cluster_uri = "#uri_literal('Work' ${w.id})")	
 	
+	## obsoleto
+	##foreach($authorsElement  in $authorsArray)
+		##$cluster_uri #bf('creator') $authorsElement . 
+	##end
+	
 	#foreach($authorsElement  in $authorsArray)
-		$cluster_uri #bf('creator') $authorsElement . 
+		$cluster_uri #relator("cre") $authorsElement . 	 
 	#end
 	
-	##setAuthorizedAccessPoint($root $cluster_uri)	
-	##marc21
-	##content 
+	##leader
 	
-	##set($triple = "")
-	##set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '336' 'a' 'Category' $category_c $contentType '336' 'a' $categorySource '336' '2')")
-	##if(!$triple || $triple == "")
-		##set($triple = "#triplesWithBlankNode($root $cluster_uri $contentCategory '337' 'b' 'Category' $category_c $contentType '337' 'b' $categorySource '337' '2')")
-	##end	
-	##$triple
+	#set($leader = $xpath.getLeader($root))
+	
+	##status leader[5]
+	#set($_leader_5 = $function.substringByPosition($leader, "5"))
+	#if($function.isNotNullAndNotEmpty($_leader_5))		
+		#set($s1 = "#uri_with_strong_normalization('AdminMetadata' $_leader_5)")
+		$cluster_uri $adminMetadata $s1 .
+		$s1 $is_a $adminMetadata_c .
+		#set($s2 = "#uri_with_strong_normalization('Status' $_leader_5)")
+		$s1 $status $s2 .
+		$s2 $is_a $status_c .
+		#if("c" == "$_leader_5" || "a" == "$_leader_5")
+			$s2 $code "c" .		
+		#elseif ("n" == "$_leader_5" || "p" == "$_leader_5")
+			$s2 $code "$_leader_5" .
+		#end
+	#end
+	
+	#* ##this triple is wrong. Cannot have <work> rdf_type "Text"
+	## it must be <work> rdf_type bf:text 
+	##type leader[6]
+	#set($_leader_6 = $function.substringByPosition($leader, "6"))
+	#set($suffix = "_leader_6")
+	#set($propertyKey = "$_leader_6$suffix")
+	#if($function.isNotNullAndNotEmpty($_leader_6))				
+		$cluster_uri $is_a "$function.getSourceUrl($propertyKey)" .	
+	#end
+	*#
+
+	
+		
+	## 003
+	#set($_003 = $xpath.cf('003', $root))
+	#if($function.isNotNullAndNotEmpty($_003))
+		#set($s1 = "#uri_with_strong_normalization('AdminMetadata' $_003)")
+		$cluster_uri $adminMetadata $s1 .
+		$s1 $is_a $adminMetadata_c .
+		#set($s2 = "#uri_with_strong_normalization('Source' $_003)")
+		$s1 $source $s2 .
+		$s2 $is_a $source_c .
+		$s2 $code "$_003" .
+	#end
+	
+	
+	
+	
+	
 	
 		##genre
 		
@@ -161,9 +202,7 @@
 	
 	#triplesWithBlankNode($root $cluster_uri $identifiedBy "024" "a" "Identifier" $identifier_c $rdf_value "024" "a")
 	#subTriples($root "024" "a" "Identifier" $source "source" "2")
-	
-	#triplesWithBlankNode($root $cluster_uri $identifiedBy "035" "a" "identifier" $identifier_c $rdf_value "036" "a") 
-	
+			
 	#triplesWithBlankNode($root $cluster_uri $language "041" "a" "Language" $language_c $rdfs_label "041" "a" $rdf_value "041" "2")
 	
 	##originDate
@@ -318,15 +357,7 @@
 	#oneTriple($root $cluster_uri "130" "f" $legalDate)
 	#oneTriple($root $cluster_uri "730" "f" $legalDate)
 	#oneTriple($root $cluster_uri "046" "kl" $legalDate)
-	
-	
-	#triplesWithBlankNode($root $cluster_uri $content '336' 'a' 'Content' $content_c $rdfs_label '336' 'a')
-	#subTriples($root "336" "a" "Content" $source "source" "2")
-	##subTriples($root "336" "a" "Content" $appliesTo "AppliesTo" "3")
-		
-	#triplesWithBlankNode($root $cluster_uri $code '336' 'b' 'Code' $code_c $rdf_value '336' 'b')
-	#subTriples($root "336" "b" "Code" $source "source" "2")
-	
+			
 	##credits
 	#oneTriple($root $manifestation_s "508" "a" $credits)
 	
@@ -367,13 +398,16 @@
 	#triplesWithBlankNode($root $cluster_uri $note "711" "m" "Note" $note_c $rdfs_label "711" "m" $noteType "" "medium of performance")
 	#triplesWithBlankNode($root $cluster_uri $note "730" "m" "Note" $note_c $rdfs_label "730" "m" $noteType "" "medium of performance")
 	
+	
+	
+	#*
 	##contributor
 	
 	#set($_700s = $xpath.many("datafield[@tag='700']",$root))	
 	#foreach($_700 in $_700s)			
 		#set($_700_4 = $function.escape($xpath.combine($_700, "4")))
 		#if(!$function.isNotNullAndNotEmpty($_700_4))
-			#triplesWithBlankNode($root $cluster_uri $contributor "700" "a" "Agent" $agent_c $rdfs_label "700" "ae")
+			
 		#else
 			#triplesWithBlankNode($root $cluster_uri $lc_relator "700" "a" "Agent" $agent_c $rdfs_label "700" "ae")
 		#end	
@@ -383,7 +417,7 @@
 	#foreach($_710 in $_710s)			
 		#set($_710_4 = $function.escape($xpath.combine($_710, "4")))
 		#if(!$function.isNotNullAndNotEmpty($_710_4))
-			#triplesWithBlankNode($root $cluster_uri $contributor "710" "a" "Agent" $agent_c $rdfs_label "710" "a")
+			
 		#else
 			#triplesWithBlankNode($root $cluster_uri $lc_relator "710" "a" "Agent" $agent_c $rdfs_label "710" "a")
 		#end	
@@ -393,19 +427,25 @@
 	#foreach($_711 in $_711s)			
 		#set($_711_4 = $function.escape($xpath.combine($_711, "4")))
 		#if(!$function.isNotNullAndNotEmpty($_711_4))
-			#triplesWithBlankNode($root $cluster_uri $contributor "711" "a" "Agent" $agent_c $rdfs_label "711" "a")
+			
 		#else
 			#triplesWithBlankNode($root $cluster_uri $lc_relator "711" "a" "Agent" $agent_c $rdfs_label "711" "a")
 		#end	
 	#end	
+	
+	*#
 	
 	## related work
 	#work_related($cluster_uri "780" "at" $root "precededBy" $work_c $precededBy)
 	#work_related($cluster_uri "785" "at" $root "succeededBy" $work_c $succeededBy)
 	
 	##subject
-	##TO CORRECT !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	##triplesForFast($root $cluster_uri $subject "Subject" "650" "a" $madsrdf_authority "650" "0")
+	##TO CORRECT: isIdentifiedByAuthority ha ranga una uri, non una label !!!!!!
+	
+	#triplesWithBlankNode($root $cluster_uri $subject "650" "a" "Subject" $resource_c $rdfs_label "650" "a" $madsrdf_authority "650" "0")
+	#triplesWithBlankNode($root $cluster_uri $subject "600" "a" "Subject" $resource_c $rdfs_label "600" "a" $madsrdf_authority "600" "0")
+	#triplesWithBlankNode($root $cluster_uri $subject "610" "a" "Subject" $resource_c $rdfs_label "610" "a" $madsrdf_authority "610" "0")
+	#triplesWithBlankNode($root $cluster_uri $subject "611" "a" "Subject" $resource_c $rdfs_label "611" "a" $madsrdf_authority "611" "0")
 	
 #end
 
@@ -434,15 +474,30 @@
 
 #if($frbr.flatWorkIDs.size() == 1)	
 	#set($s = "#uri_literal('Work' ${frbr.flatWorkIDs.iterator().next().id})")	
-	#set($p = $workTitle)
-	#set($k = "workTitle")
+	#set($p = $title)
+	#set($k = "title")
 #else
 	#set($s = $manifestation_s)
-	#set($p = $instanceTitle)
-	#set($k = "instanceTitle")
+	#set($p = $title)
+	#set($k = "title")
 #end
+	
+	#triplesFor33x($root $cluster_uri $content 'Content' '336' '0' $rdfs_label 'a' $isQuad)			
+	#triplesFor33x($root $manifestation_s $media 'Media' '337' '0' $rdfs_label 'a' $isQuad)	
+	#triplesFor33x($root $manifestation_s $carrier 'Carrier' '338' '0' $rdfs_label 'a' $isQuad)
+	
+	
+	#triplesWithBlankNode($root $cluster_uri $content '336' 'a' 'Content' $content_c $rdfs_label '336' 'a')			
+	#triplesWithBlankNode($root $cluster_uri $code '336' 'b' 'Code' $code_c $rdf_value '336' 'b')
+	
+	#triplesWithBlankNode($root $manifestation_s $carrier '338' 'a' 'Carrier' $carrier_c $rdfs_label '338' 'a')
+	#triplesWithBlankNode($root $manifestation_s $code '338' 'b' 'Code' $code_c $rdfs_label '338' 'b')
+		
+	#triplesWithBlankNode($root $manifestation_s $media '337' 'a' 'Media' $media_c $rdfs_label '337' 'a')	
+	#triplesWithBlankNode($root $manifestation_s $code '337' 'b' 'Code' $code_c $rdfs_label '337' 'b')
+	
 
-
+	
 
 ## ISTANCE
 
@@ -450,27 +505,28 @@ $manifestation_s $is_a $instance_c .
 
 ##marc21
 
-#triplesWithBlankNode($root $manifestation_s $carrier '338' 'a' 'Carrier' $carrier_c $rdfs_label '338' 'a')
-	#subTriples($root "338" "a" "Carrier" $source "source" "2")
-	
-#triplesWithBlankNode($root $manifestation_s $media '337' 'a' 'Media' $media_c $rdfs_label '337' 'a')
-#subTriples($root "337" "a" "Media" $source "source" "2")
-##subTriples($root "337" "a" "Media" $appliesTo "AppliesTo" "3")
-	
-#triplesWithBlankNode($root $manifestation_s $code '337' 'b' 'Code' $code_c $rdfs_label '337' 'b')
-#subTriples($root "337" "b" "Code" $source "source" "2")
-	
-#triplesWithBlankNode($root $manifestation_s $code '338' 'b' 'Code' $code_c $rdfs_label '338' 'b')
-#subTriples($root "338" "b" "Code" $source "source" "2")
 
+## 001
+	#set($_001 = $xpath.cf('001', $root))
+	#if($function.isNotNullAndNotEmpty($_001))
+		#set($s1 = "#uri_with_strong_normalization('AdminMetadata' $_001)")
+		$manifestation_s $adminMetadata $s1 .
+		$s1 $is_a $adminMetadata_c .
+		#set($s2 = "#uri_with_strong_normalization('Local' $_001)")
+		$s1 $identifiedBy $s2 .		
+		$s2 $rdfs_label "$_001" .
+	#end
+	
+##035
+#triplesWithBlankNode($root $manifestation_s $identifiedBy "035" "a" "identifier" $identifier_c $rdf_value "036" "a")
 
 ##istance title (che probabilmente non serve se appartiene ad un cluster)
-##triplesWithBlankNode($root $manifestation_s $instanceTitle "245" "ab" "instanceTitle" $title_c $titleValue "245" "ab" $titleType "" "Istance Title" $partNumber "245" "n" $partTitle "245" "p" $titleVariationDate "245" "f")
+##triplesWithBlankNode($root $manifestation_s $title "245" "ab" "title" $title_c $titleValue "245" "ab" $titleType "" "Istance Title" $partNumber "245" "n" $partTitle "245" "p" $titleVariationDate "245" "f")
 
 #work_related($manifestation_s "777" "at" $root "issuedWith" $work_c $issuedWith)
 
 ##n.b che viene sovrascritta in caso siano presenti 246, perchè vengono gestiti come instance title pure loro
-#triplesWithBlankNode($root $manifestation_s $title "245" "a" "instanceTitle" $instanceTitle_c $rdfs_label "245" "a" $subtitle "245" "b" $partNumber "245" "n" $partName "245" "p")
+#triplesWithBlankNode($root $manifestation_s $title "245" "a" "title" $title_c $rdfs_label "245" "a" $subtitle "245" "b" $partNumber "245" "n" $partName "245" "p")
 
 
 #triples_blank_indicators($root $manifestation_s $title "246" "a" "0" "Title" $variantTitle_c $rdfs_label "246" "a" $variantType "" "Portion of title" $subtitle "246" "b" $partNumber "246" "n" $partName "246" "p")
@@ -489,9 +545,9 @@ $manifestation_s $is_a $instance_c .
 
 #triplesWithBlankNode($root $manifestation_s $title "222" "a" "Title" $keyTitle_c $rdfs_label "222" "a" $qualifier "222" "b")
 #triplesWithBlankNode($root $manifestation_s $title "210" "a" "Title" $abbreviatedTitle_c $rdfs_label "210" "a" $qualifier "210" "b")
-#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "Title" $instanceTitle_c $rdfs_label "246" "ab")
-#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "Title" $instanceTitle_c $rdfs_label "247" "ab")
-#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "Title" $instanceTitle_c $rdfs_label "242" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "246" "ab" "Title" $title_c $rdfs_label "246" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "247" "ab" "Title" $title_c $rdfs_label "247" "ab")
+#triplesWithBlankNode($root $manifestation_s $title "242" "ab" "Title" $title_c $rdfs_label "242" "ab")
 
 
 
@@ -571,9 +627,9 @@ $manifestation_s $is_a $instance_c .
 ##oneTriple($root $manifestation_s "250" "b" $editionResponsibility)
 
 ##extent
-#triplesWithBlankNode($root $manifestation_s $extent "300" "afg" "Extent" $extent_c $rdfs_label "300" "afg" $dimensions "300" "c" )
-#subTriples($root "300" "afg" "Extent" $unit "Unit" "f")
-#subTriples($root "300" "afg" "Extent" $appliesTo "AppliesTo" "3")
+#triplesWithBlankNode($root $manifestation_s $extent "300" "afgc" "Extent" $extent_c $rdfs_label "300" "afg" $dimensions "300" "c" )
+#subTriples($root "300" "afgc" "Extent" $unit "Unit" "f")
+#subTriples($root "300" "afgc" "Extent" $appliesTo "AppliesTo" "3")
 
 #triplesWithBlankNode($root $manifestation_s $note "300" "b" "Note" $note_c  $rdfs_label "300" "b" $noteType "" "Physical details")
 #triplesWithBlankNode($root $manifestation_s $note "300" "e" "Note" $note_c  $rdfs_label "300" "e" $noteType "" "Accompanying material")
@@ -597,22 +653,56 @@ $manifestation_s $is_a $instance_c .
 ###oneTriple($root $manifestation_s "856" "q" $format)
 ###oneTriple($root $manifestation_s "340" "abcdefhljkmno" $format)
 
-##providerStatement
-## DA CONTROLLARE se ancora valide dopo le modifiche
-##oneTripleCleaned($root $manifestation_s "260" "abc" $provisionActivityStatement)
-##oneTripleCleaned($root $manifestation_s "264" "abc" $provisionActivityStatement)
+############ PUBLISHER #############
 
-##
+##providerStatement
+
 ##triplesWithBlankNode($root $manifestation_s $provisionActivity "260" "abc" "Distribution" $provisionActivity_c )
 #triplesWithBlankNode($root $manifestation_s $provisionActivity "260" "abc" "Distribution" $distribution_c )
-#subTriples($root "260" "abc" "Distibution" $agent "Agent" "b")
-#subTriples($root "260" "abc" "Distibution" $place "Place" "a")
-#subTriples($root "260" "abc" "Distibution" $appliesTo "AppliesTo" "3")
+#subTriples($root "260" "abc" "Distribution" $agent "Agent" "b")
+#subTriples($root "260" "abc" "Distribution" $place "Place" "a")
+
+
+	#### external uris ####
+#set ($_260tags = $xpath.many("datafield[@tag='260']", $root))
+#foreach($_260tag in $_260tags)	
+	#set($_260value = $xpath.combine($_260tag, "abc"))
+	#if($function.isNotNullAndNotEmpty($_260value))
+		#set($s_260 = "#uri_with_strong_normalization('Distribution' ${_260value})")
+	
+		#set($external_uris = $xpath.extractSubfield($_260tag, "9"))
+		#foreach($external_uri in $external_uris)
+			$s_260 $madsrdf_authority "$external_uri" .
+		#end
+
+	#end
+#end
+
 
 #triplesWithBlankNode($root $manifestation_s $provisionActivity "264" "abc" "Distribution" $distribution_c )
-#subTriples($root "264" "abc" "Distibution" $agent "Agent" "b")
-#subTriples($root "264" "abc" "Distibution" $place "Place" "a")
-#subTriples($root "264" "abc" "Distibution" $appliesTo "AppliesTo" "3")
+#subTriples($root "264" "abc" "Distribution" $agent "Agent" "b")
+#subTriples($root "264" "abc" "Distribution" $place "Place" "a")
+
+	#### external uris ####
+#set ($_264tags = $xpath.many("datafield[@tag='264']", $root))
+#foreach($_264tag in $_264tags)	
+	#set($_264value = $xpath.combine($_264tag, "abc"))
+	#if($function.isNotNullAndNotEmpty($_264value))
+		#set($s_264 = "#uri_with_strong_normalization('Instance' ${_264value})")
+	
+		#set($external_uris = $xpath.extractSubfield($_264tag, "9"))
+		#foreach($external_uri in $external_uris)
+			$s_264 $madsrdf_authority "$external_uri" .
+		#end
+
+	#end
+#end
+
+
+
+
+
+
 ##publication  (non precisa)
 ##triplesWithBlankNode($root $manifestation_s $publication "260" "a" "provider" $provider_c $providerRole "260" "bf" $providerPlace "260" "a" $providerName "260" "b" $providerDate "260" "c")
 
@@ -841,6 +931,18 @@ $manifestation_s $is_a $instance_c .
 
 ##library_source
 ##librarySourceTriple
+##library source
+#set ($_997 = $xpath.one("datafield[@tag='997' and @ind1='1' and @ind2='0']", $root))
+#set($blankValue = $xpath.combine($_997, "a"))
+
+#set($sourceLibraryUri = "#uri_literal('Agent' ${blankValue})")	
+$sourceLibraryUri $rdfs_label "${blankValue}" .
+
+
+$manifestation_s $adminMetadata #uri_literal('AdminMetadata' ${blankValue}) .
+#uri_literal('AdminMetadata' ${blankValue}) $source $sourceLibraryUri .
+
+
 
 ############################################
 
@@ -893,7 +995,6 @@ $manifestation_s $is_a $instance_c .
 ##Item
 
 #multipleClassTriples($root $manifestation_s $hasItem  'Item' $item_c "852" "a" "a" 'Agent' $agent_c $held_by)
-#multipleClassTriples($root $manifestation_s $hasItem 'Item' $item_c "050" "ab" "ab" 'ShelfaMarkLcc' $shelfMarkLcc_c $shelfMark)
 
 #oneTripleWithUri($root $manifestation_s "040" "e" $descriptionConventions "<http://id.loc.gov/vocabulary/descriptionConventions/")
 
@@ -913,4 +1014,4 @@ $manifestation_s $is_a $instance_c .
 				#triplesWithBlankOne("a:substringFirstSpace" $root $manifestation_s $identifiedBy $_020 "a" "identifier" $isbn_c $rdf_value "020" "a")	
 			#end
 		#end	
-	#end
+	#end	
